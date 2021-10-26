@@ -1,4 +1,4 @@
-# mtj-softtuner
+# mtj-softtuner [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 ### (Unofficial Mesh Transformer JAX soft-tuning notebook)
 
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/VE-FORBRYDERNE/mtj-softtuner/blob/main/mtj-softtuner.ipynb)
