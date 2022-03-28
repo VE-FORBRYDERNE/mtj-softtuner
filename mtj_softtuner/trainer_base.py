@@ -364,7 +364,7 @@ class TrainerBase(abc.ABC):
         self.data.params["early_cast"] = True
 
         g_avg = s_avg = False
-        if step == 0:
+        if not os.path.exists(self.data.save_file):
             print("We are starting a brand new soft-tuning session.\n")
             self.startup(step=-1)
             if self.data.soft_in_dim <= 0:

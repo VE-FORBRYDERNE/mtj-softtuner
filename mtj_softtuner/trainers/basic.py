@@ -23,7 +23,7 @@ class BasicTrainer(trainer_base.TrainerBase):
                 "Your dataset is too small!  gradient_accumulation_steps must be less than or equal to the number of sequences.",
                 code=101,
             )
-        if self.data.initial_softprompt is None:
+        if step < 0 and self.data.initial_softprompt is None:
             self.raise_configuration_error(
                 "You have not set an initial soft prompt string.", code=103
             )
