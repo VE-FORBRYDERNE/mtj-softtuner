@@ -1,3 +1,4 @@
+from .. import core
 from .. import trainer_base
 
 import os
@@ -46,7 +47,9 @@ class BasicTrainer(trainer_base.TrainerBase):
         assert self.dataset.shape[0] >= 2
         return self.dataset.shape[0]
 
-    def get_initial_soft_embeddings(self, network) -> np.array:
+    def get_initial_soft_embeddings(
+        self, network: core.EmbeddingCausalTransformer
+    ) -> np.array:
         return network.get_embedding_matrix(
             np.array(self.data.initial_softprompt, dtype=np.uint32)
         )
