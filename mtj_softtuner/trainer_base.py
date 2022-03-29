@@ -348,7 +348,7 @@ class TrainerBase(abc.ABC):
 
         if (
             not os.path.exists(os.path.join(self.data.ckpt_path, "shard_0/0.npz"))
-            and not self._get_hf_checkpoint_metadata()
+            and not self.get_hf_checkpoint_metadata()
         ):
             raise RuntimeError("Error getting HF checkpoint metadata")
 
