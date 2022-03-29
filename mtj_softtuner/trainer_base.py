@@ -93,7 +93,8 @@ class TrainerBase(abc.ABC):
 
     def save_data(self):
         if self.data.params is not None:
-            self.data.params.pop("optimizer", None)
+            for p in ("optimizer", "soft_in_dim"):
+                self.data.params.pop(p, None)
         serialization.save_variable(
             self.universe,
             type(self).__name__ + "_" + "data",
@@ -417,7 +418,7 @@ class TrainerBase(abc.ABC):
             soft_embeddings = jnp.float32(soft_embeddings)
 
         # Load the model
-        core.EmbeddingShard.soft_in_dim = self.data.soft_in_dim
+        self.data.params["soft_in_dim"] = self.data.soft_in_dim
         if self._spmodule is None:
             print(termcolor.colored("Initializing network...", "magenta"), flush=True)
             self.data.params["optimizer"] = optax.scale(0)

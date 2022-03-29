@@ -107,7 +107,7 @@ class EmbeddingShard(mesh_transformer.transformer_shard.EmbeddingShard):
 
     def __init__(self, config: dict, **kwargs):
         super().__init__(config, **kwargs)
-        self.softtune_in_dim = EmbeddingShard.soft_in_dim
+        self.softtune_in_dim = config["soft_in_dim"]
         self.softtune_in_dim_per_shard = math.ceil(
             self.softtune_in_dim / config["cores_per_replica"]
         )
