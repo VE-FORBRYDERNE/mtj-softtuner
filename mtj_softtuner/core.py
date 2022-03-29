@@ -536,7 +536,9 @@ def show_spinner() -> multiprocessing.Process:
     return spinner
 
 
-def initialize(quiet=exceptions.default_quiet):
+def initialize(quiet: Optional[bool] = None):
+    if quiet is None:
+        quiet = exceptions.default_quiet
     global initialized
     if initialized:
         return

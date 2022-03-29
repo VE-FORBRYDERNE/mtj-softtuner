@@ -1,5 +1,6 @@
 import sys
 import termcolor
+from typing import Optional
 
 try:
     import IPython
@@ -13,7 +14,11 @@ default_quiet = False
 
 
 class ConfigurationError(Exception):
-    def __init__(self, msg: str = "Unknown error", code: int = 1, quiet=default_quiet):
+    def __init__(
+        self, msg: str = "Unknown error", code: int = 1, quiet: Optional[bool] = None
+    ):
+        if quiet is None:
+            quiet = default_quiet
         super().__init__(msg)
         self.code = code
         self.quiet = quiet
