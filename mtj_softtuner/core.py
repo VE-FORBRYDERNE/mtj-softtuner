@@ -99,60 +99,6 @@ def shatter(in_axes: str, out_axes: str):
     )
 
 
-def shatter(in_axes: str, out_axes: str):
-    """Helper function for setting up JAX xmaps.
-
-    This is a decorator that creates an xmapped version of a function.
-    Your function's arguments should be NumPy arrays or JAX pytrees with
-    NumPy arrays at the leaves.  Your actual function will be run 8 times in
-    parallel (once for each TPU core).  You can specify for some of your
-    function's arguments to be sharded (using a different value for that
-    argument on each TPU).  Sharded arguments will be split along the leading
-    dimension into 8 subarrays, for example if your sharded argument is an
-    array with shape (8, 10, 2), each of the 8 versions of your function will
-    receive one subarray with shape (10, 2).  If the leading dimension of your
-    sharded arguments aren't equal to 8, you will receive an error.
-    The return value(s) of your function can also be sharded, which will
-    result in each of the 8 values from your 8 versions of your function to be
-    concatenated together along a new leading axis.  Non-sharded arguments
-    should have a leading axis of size 1.
-
-    Note: Your function must have at least one sharded argument AND one
-    non-sharded argument, otherwise an error will be thrown.  Also your
-    function shouldn't have any default arguments, *args or **kwargs.
-
-    Parameters
-    ----------
-    in_axes : str
-        A string with the same length as the number of parameters your function
-        has, where each character of the string is 's' or 'b'.  's' means the
-        corresponding parameter of your function should be sharded; 'b' means
-        the corresponding parameter of your function should not be sharded.
-    out_axes : str
-        A string with the same length as the number of returns your function
-        has, where each character of the string is 's' or 'b'.
-
-    Returns
-    -------
-    Callable[Callable[..., Any], Callable[..., Any]]
-        A function that takes one argument (the function that you want to be
-        xmapped) and returns the xmapped version of your function.
-    """
-    in_axes = tuple(map(lambda c: ["batch" if c == "b" else "shard", ...], in_axes))
-    out_axes = tuple(map(lambda c: ["batch" if c == "b" else "shard", ...], out_axes))
-    if len(in_axes) == 1:
-        in_axes = in_axes[0]
-    if len(out_axes) == 1:
-        out_axes = out_axes[0]
-    return lambda fun: jax.experimental.maps.xmap(
-        fun=fun,
-        in_axes=in_axes,
-        out_axes=out_axes,
-        donate_argnums=(0,),
-        axis_resources={"shard": "mp", "batch": "dp"},
-    )
-
-
 class EmbeddingShard(mesh_transformer.transformer_shard.EmbeddingShard):
     """
     A version of Mesh Transformer JAX's EmbeddingShard with a trainable
