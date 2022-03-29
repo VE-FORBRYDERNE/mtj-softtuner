@@ -13,6 +13,8 @@ class BasicTrainer(trainer_base.TrainerBase):
             self.dataset_file: Optional[str] = None
             self.initial_softprompt: Optional[List[int]] = None
 
+    data: "BasicTrainer.TrainerData"
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.dataset: Optional[np.array] = None

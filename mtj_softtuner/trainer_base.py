@@ -65,6 +65,8 @@ class TrainerBase(abc.ABC):
             self.gradient_accumulation_steps = -1
             self.soft_in_dim = -1
 
+    data: TrainerData
+
     def __init__(self, universe: Optional[int] = None, quiet=False):
         self.quiet = quiet
         self.universe = universe
