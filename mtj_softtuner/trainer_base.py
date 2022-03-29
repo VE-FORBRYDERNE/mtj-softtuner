@@ -36,27 +36,27 @@ import transformers
 class TrainerBase(abc.ABC):
     @abc.abstractmethod
     def startup(self, step: int) -> None:
-        pass
+        ...
 
     @abc.abstractmethod
     def get_batch(self, step: int, size: int) -> np.array:
-        pass
+        ...
 
     @abc.abstractmethod
     def get_num_sequences(self) -> int:
-        pass
+        ...
 
     @abc.abstractmethod
     def get_initial_soft_embeddings(
         self, network: core.EmbeddingCausalTransformer
     ) -> np.array:
-        pass
+        ...
 
     @abc.abstractmethod
     def tokenize_dataset_callback(
         self, tokenizer: transformers.PreTrainedTokenizerBase, text: str
     ) -> List[int]:
-        pass
+        ...
 
     class TrainerData:
         def __init__(self):
