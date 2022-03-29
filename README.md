@@ -37,8 +37,9 @@ trainer = BasicTrainer(universe, quiet=quiet)
 trainer.data.ckpt_path = "/content/step_383500"
 trainer.get_hf_checkpoint_metadata()
 
-# This line below is only required if you're loading from a Mesh Transformer JAX
-# model, see the demo notebook for the full list of permitted model types
+# These two lines below are only required if you're loading from a Mesh
+# Transformer JAX model, see the demo notebook for the full list of permitted
+# model types
 model_type = "GPT-J-6B"
 trainer.set_params(model_type)
 
