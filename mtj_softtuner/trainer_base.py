@@ -105,6 +105,9 @@ class TrainerBase(abc.ABC):
         ) = data
         return True
 
+    def get_tokenizer(self) -> transformers.PreTrainedTokenizerBase:
+        return core.get_tokenizer(self.data.params)
+
     def set_params(self, model_type: str):
         path = os.path.join(
             os.path.dirname(os.path.realpath(__file__)), "model_params.json"

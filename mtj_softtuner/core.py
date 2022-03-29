@@ -632,7 +632,9 @@ def initialize_thread_resources(shards: int):
     return thread_resources_env
 
 
-def get_tokenizer(params: dict, tokenizer_id: Optional[str] = None):
+def get_tokenizer(
+    params: dict, tokenizer_id: Optional[str] = None
+) -> transformers.PreTrainedTokenizerBase:
     return transformers.GPT2TokenizerFast.from_pretrained(
         params.get("tokenizer_id", "gpt2")
     )
