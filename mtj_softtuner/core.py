@@ -540,6 +540,15 @@ def initialize(quiet=exceptions.default_quiet):
     global initialized
     if initialized:
         return
+    if (
+        "COLAB_TPU_ADDR" not in os.environ
+        or len(os.environ["COLAB_TPU_ADDR"].split()) == 0
+    ):
+        raise exceptions.ConfigurationError(
+            "No Colab TPU detected.  Is this script running in a Colab TPU instance?",
+            code=16,
+            quiet=quiet,
+        )
     print(
         termcolor.colored("\n\nConnecting to your Colab instance's TPU...", "magenta"),
         flush=True,
