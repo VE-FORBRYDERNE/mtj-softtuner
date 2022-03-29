@@ -94,7 +94,7 @@ class TrainerBase(abc.ABC):
             self.data,
         )
 
-    def _get_hf_checkpoint_metadata(self) -> bool:
+    def get_hf_checkpoint_metadata(self) -> bool:
         data = core.get_hf_checkpoint_metadata(self.data.ckpt_path)
         if data is None:
             return False
@@ -108,6 +108,7 @@ class TrainerBase(abc.ABC):
         return True
 
     def get_tokenizer(self) -> transformers.PreTrainedTokenizerBase:
+        self.get_hf_checkpoint_metadata()
         return core.get_tokenizer(self.data.params)
 
     def set_params(self, model_type: str):
@@ -245,8 +246,7 @@ class TrainerBase(abc.ABC):
                 "dataset_path is not set to a valid file or directory.", code=12
             )
 
-        self._get_hf_checkpoint_metadata()
-        tokenizer = core.get_tokenizer(self.data.params)
+        tokenizer = self.get_tokenizer()
 
         batch_size = min(
             batch_size,
