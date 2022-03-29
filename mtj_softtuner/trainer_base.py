@@ -25,7 +25,7 @@ import base64
 import pickle
 import datetime
 import uuid
-from typing import TextIO, Union
+from typing import List, TextIO, Union
 import mesh_transformer
 import mesh_transformer.util
 import mesh_transformer.layers
@@ -50,6 +50,12 @@ class TrainerBase(abc.ABC):
     def get_initial_soft_embeddings(
         self, network: core.EmbeddingCausalTransformer
     ) -> np.array:
+        pass
+
+    @abc.abstractmethod
+    def tokenize_dataset_callback(
+        self, tokenizer: transformers.PreTrainedTokenizerBase, text: str
+    ) -> List[int]:
         pass
 
     class TrainerData:
@@ -282,9 +288,8 @@ class TrainerBase(abc.ABC):
                 text = f.read()
                 if use_ftfy:
                     text = ftfy.fix_text(text)
-                if self.data.newlinemode == "s":
-                    text = text.replace("\n", "</s>").replace("<|endoftext|>", eos)
-                tokens.extend(tokenizer.encode(text) + self.data.params["eos_token"])
+                text = text.replace("<|endoftext|>", eos)
+                tokens.extend(self.tokenize_dataset_callback(tokenizer, text))
             finally:
                 if isinstance(path, str):
                     f.close()

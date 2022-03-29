@@ -3,6 +3,7 @@ from .. import trainer_base
 
 import os
 import numpy as np
+import transformers
 from typing import List, Optional
 
 
@@ -55,3 +56,10 @@ class BasicTrainer(trainer_base.TrainerBase):
         return network.get_embedding_matrix(
             np.array(self.data.initial_softprompt, dtype=np.uint32)
         )
+
+    def tokenize_dataset_callback(
+        self, tokenizer: transformers.PreTrainedTokenizerBase, text: str
+    ) -> List[int]:
+        if self.data.newlinemode == "s":
+            text = text.replace("\n", "</s>")
+        return tokenizer.encode(text) + self.data.params["eos_token"]
