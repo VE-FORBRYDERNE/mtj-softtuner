@@ -75,7 +75,7 @@ class TrainerBase(abc.ABC):
         if universe is not None:
             try:
                 self.data = serialization.restore_variable(
-                    universe, type(self).__name__ + "/~/" + "data"
+                    universe, type(self).__name__ + "_" + "data"
                 )
             except ValueError:
                 pass
@@ -86,9 +86,11 @@ class TrainerBase(abc.ABC):
         raise exceptions.ConfigurationError(msg, **kwargs)
 
     def save_data(self):
+        if self.data.params is not None:
+            self.data.params.pop("optimizer", None)
         serialization.save_variable(
             self.universe,
-            type(self).__name__ + "/~/" + "data",
+            type(self).__name__ + "_" + "data",
             self.data,
         )
 
@@ -253,7 +255,7 @@ class TrainerBase(abc.ABC):
         assert batch_size >= 0
         print(
             termcolor.colored(
-                "\nIf you see a warning above about token indices, ignore it.  That warning is normal.\n",
+                "\nIf you see a warning somewhere below about token indices, ignore it.  That warning is normal.\n",
                 "magenta",
             )
         )

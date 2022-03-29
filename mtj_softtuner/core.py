@@ -641,6 +641,9 @@ def get_tokenizer(
 
 
 def get_hf_checkpoint_metadata(ckpt_path: str):
+    if os.path.exists(os.path.join(ckpt_path, "shard_0/0.npz")):
+        return None
+
     ckpt_path = ckpt_path.rstrip("/")
     model_config = transformers.AutoConfig.from_pretrained(ckpt_path)
 

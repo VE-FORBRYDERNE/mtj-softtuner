@@ -8,7 +8,9 @@ def save_variable(universe: int, name: str, val) -> None:
         return
     universe = int(universe)
     name = str(name)
-    with open(os.path.join("." + str(universe), name), "wb") as f:
+    folder = os.path.join(".mtjs" + str(universe))
+    os.makedirs(folder, exist_ok=True)
+    with open(os.path.join(folder, name), "wb") as f:
         pickle.dump(val, f)
 
 
@@ -16,8 +18,9 @@ def restore_variable(universe: int, name: str):
     """Restore a variable saved with `save_variable` if it exists."""
     universe = int(universe)
     name = str(name)
-    path = os.path.join("." + str(universe), name)
+    folder = os.path.join(".mtjs" + str(universe))
+    path = os.path.join(folder, name)
     if not os.path.exists(path):
         raise ValueError(path)
-    with open(".notebook_pickle/" + name, "rb") as f:
+    with open(path, "rb") as f:
         return pickle.load(f)
