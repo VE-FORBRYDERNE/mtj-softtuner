@@ -152,7 +152,7 @@ class TrainerBase(abc.ABC):
                 )
             )
             _step = np.uint32(npz["step"]).item()
-        except:
+        except AssertionError:
             self.raise_configuration_error("MTJSP file is corrupted.", code=14)
 
         tensor = npz["tensor"]
@@ -195,7 +195,7 @@ class TrainerBase(abc.ABC):
                 )
             )
             _step = np.uint32(npz["step"]).item()
-        except:
+        except AssertionError:
             self.raise_configuration_error("MTJSP file is corrupted.", code=14)
 
         tensor = npz["tensor"]
@@ -408,8 +408,8 @@ class TrainerBase(abc.ABC):
                 if "g_avg" in npz and "s_avg" in npz:
                     g_avg = np.float32(npz["g_avg"])
                     s_avg = np.float32(npz["s_avg"])
-            except:
-                raise exceptions.ConfigurationError("MTJSP file is corrupted.")
+            except AssertionError:
+                raise exceptions.ConfigurationError("MTJSP file is corrupted.", code=14)
             print(f"We're resuming a previous soft-tuning session at step {step+1}.\n")
             self.startup(step=step + 1)
             soft_embeddings = npz["tensor"]
@@ -752,7 +752,7 @@ class TrainerBase(abc.ABC):
                 grad_norm,
                 grad_norm_micro,
             )
-        for i in tqdm(
+        for _ in tqdm(
             range(first_step, steps),
             initial=first_step,
             total=steps,

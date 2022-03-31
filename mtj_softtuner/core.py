@@ -227,7 +227,7 @@ def read_ckpt_custom(
     move_xmap,
     params,
     pytree,
-    dir: str,
+    ckpt_dir: str,
     shards_in: int,
     load_opt: bool = True,
 ):
@@ -243,7 +243,7 @@ def read_ckpt_custom(
         Network configuration (network.config).
     pytree
         State of the network (network.state).
-    dir : str
+    ckpt_dir : str
         Path to the model checkpoint.  Must contain a trailing slash.
     shards_in : int
         Number of shards the model is broken up into.  Should be 8.
@@ -261,8 +261,8 @@ def read_ckpt_custom(
         embedding matrix is called `soft_embeddings`) by doing
         `network.state["params"][spmodule]["w"] = soft_embeddings`.
     """
-    if not dir.endswith("/"):
-        dir += "/"
+    if not ckpt_dir.endswith("/"):
+        ckpt_dir += "/"
 
     pieces = 16
 
@@ -290,14 +290,14 @@ def read_ckpt_custom(
 
     n_tensors = 0
     for file_index in range(pieces):
-        n_tensors += len(np.load(f"{dir}shard_0/{file_index}.npz").keys())
+        n_tensors += len(np.load(f"{ckpt_dir}shard_0/{file_index}.npz").keys())
 
     def _unshard(bar):
         unsharded = []
         tensor_index = progress_index = 0
 
         for file_index in range(pieces):
-            array_keys = [*np.load(f"{dir}shard_0/{file_index}.npz").keys()]
+            array_keys = [*np.load(f"{ckpt_dir}shard_0/{file_index}.npz").keys()]
             for array_index in range(len(array_keys)):
                 unstacked = []
                 for shard_index in range(shards_in):
@@ -323,7 +323,7 @@ def read_ckpt_custom(
                         )
                         tensor_index += 1
 
-                    npz = np.load(f"{dir}shard_{shard_index}/{file_index}.npz")
+                    npz = np.load(f"{ckpt_dir}shard_{shard_index}/{file_index}.npz")
                     array = npz[array_keys[array_index]]
                     if array.dtype == "V2":
                         array.dtype = jnp.bfloat16

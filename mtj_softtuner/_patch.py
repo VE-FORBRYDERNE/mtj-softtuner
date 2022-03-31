@@ -32,13 +32,13 @@ if packaging.version.parse(jax.__version__) >= packaging.version.parse("0.2.13")
     jax.host_id = jax.process_index
 
 
-def getnorm(type: str):
-    if type == "layernorm":
+def getnorm(norm_type: str):
+    if norm_type == "layernorm":
         return hk.LayerNorm(-1, True, True, name="replicated_layer_norm")
-    elif type == "layernorm-nobias":
+    elif norm_type == "layernorm-nobias":
         return hk.LayerNorm(-1, True, False, name="replicated_layer_norm")
     else:
-        return old_getnorm(type)
+        return old_getnorm(norm_type)
 
 
 mesh_transformer.layers.getnorm = getnorm
