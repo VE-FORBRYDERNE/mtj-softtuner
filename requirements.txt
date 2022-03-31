@@ -9,6 +9,6 @@ jax == 0.2.12
 jaxlib == 0.1.68
 transformers >= 4.17
 progressbar2
-mesh_transformer @ git+https://github.com/VE-FORBRYDERNE/mesh-transformer-jax@ck#egg=mesh_transformer
+mesh_transformer @ git+https://github.com/VE-FORBRYDERNE/mesh-transformer-jax#egg=mesh_transformer
 ftfy
 termcolor
