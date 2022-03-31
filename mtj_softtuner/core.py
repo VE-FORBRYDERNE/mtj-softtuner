@@ -18,7 +18,7 @@ import numpy as np
 import haiku as hk
 import torch
 import packaging.version
-from typing import Optional
+from typing import Callable, Optional, TypeVar
 import mesh_transformer
 import mesh_transformer.util
 import mesh_transformer.layers
@@ -31,6 +31,7 @@ DEMATERIALIZED_LOADING_SUPPORTED = hasattr(
 )
 
 initialized = False
+thread_resources_initialized = False
 
 
 def jax_from_dlpack(capsule) -> jnp.array:
@@ -43,6 +44,32 @@ def jax_from_dlpack(capsule) -> jnp.array:
             else {"backend": jax.lib.xla_bridge.get_backend("cpu")}
         ),
     ).copy()
+
+
+class _ShatterFunction:
+    def __init__(self, fun: Callable, in_axes, out_axes):
+        self.__sf_fun = fun
+        self.__sf_in_axes = in_axes
+        self.__sf_out_axes = out_axes
+        self.__sf_mapped: Optional[Callable] = None
+
+    def __call__(self, *args, **kwargs):
+        if not thread_resources_initialized:
+            raise RuntimeError(
+                "Called a @shatter function before `initialize_thread_resources()` was called"
+            )
+        if self.__sf_mapped is None:
+            self.__sf_mapped = jax.experimental.maps.xmap(
+                fun=self.__sf_fun,
+                in_axes=self.__sf_in_axes,
+                out_axes=self.__sf_out_axes,
+                donate_argnums=(0,),
+                axis_resources={"shard": "mp", "batch": "dp"},
+            )
+        return self.__sf_mapped(*args, **kwargs)
+
+
+__F = TypeVar("__F", bound=Callable)
 
 
 def shatter(in_axes: str, out_axes: str):
@@ -90,13 +117,11 @@ def shatter(in_axes: str, out_axes: str):
         in_axes = in_axes[0]
     if len(out_axes) == 1:
         out_axes = out_axes[0]
-    return lambda fun: jax.experimental.maps.xmap(
-        fun=fun,
-        in_axes=in_axes,
-        out_axes=out_axes,
-        donate_argnums=(0,),
-        axis_resources={"shard": "mp", "batch": "dp"},
-    )
+
+    def decorator(fun: __F) -> __F:
+        return _ShatterFunction(fun, in_axes, out_axes)
+
+    return decorator
 
 
 class EmbeddingShard(mesh_transformer.transformer_shard.EmbeddingShard):
@@ -574,6 +599,11 @@ def initialize(quiet: Optional[bool] = None):
 
 
 def initialize_thread_resources(shards: int):
+    if not initialized:
+        raise RuntimeError(
+            "`initialize_thread_resources()` called before `initialize()` was called"
+        )
+    global thread_resources_initialized
     mesh_shape = (1, shards)
     devices = np.array(jax.devices()[:shards]).reshape(mesh_shape)
     thread_resources_env = jax.experimental.maps.ResourceEnv(
@@ -586,6 +616,7 @@ def initialize_thread_resources(shards: int):
         ),
     )
     jax.experimental.maps.thread_resources.env = thread_resources_env
+    thread_resources_initialized = True
     return thread_resources_env
 
 
