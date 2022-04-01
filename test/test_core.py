@@ -128,7 +128,7 @@ def decode(tokenizer):
                 286,
                 7327,
                 13,
-                50257
+                50257,
             ]
         ),
         "Here then is one end: a final act of reading, a final act of consumption.",
@@ -219,9 +219,9 @@ def test_dlpack():
             jnp.empty(8),
             mtj_softtuner.core.jax_from_dlpack(
                 torch.utils.dlpack.to_dlpack(
-                    torch.eye(2056, dtype=torch.float16)[1:].T[None]
+                    torch.eye(2056, dtype=torch.float32)[1:].T[None]
                 )
             ),
         )
-        == torch.eye(2056, dtype=torch.float16)[1:].T[None]
-    ) + 1
+        == jnp.array(torch.eye(2056, dtype=torch.float32)[1:].T[None] + 1)
+    ).all()
