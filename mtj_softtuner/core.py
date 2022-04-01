@@ -46,6 +46,10 @@ def jax_from_dlpack(capsule) -> jnp.array:
     ).copy()
 
 
+class CoreNotInitializedError(Exception):
+    pass
+
+
 class _ShatterFunction:
     def __init__(self, fun: Callable, in_axes, out_axes):
         self.__sf_fun = fun
@@ -55,7 +59,7 @@ class _ShatterFunction:
 
     def __call__(self, *args, **kwargs):
         if not thread_resources_initialized:
-            raise RuntimeError(
+            raise CoreNotInitializedError(
                 "Called a @shatter function before `initialize_thread_resources()` was called"
             )
         if self.__sf_mapped is None:
@@ -598,14 +602,14 @@ def initialize(quiet: Optional[bool] = None):
     initialized = True
 
 
-def initialize_thread_resources(shards: int):
+def initialize_thread_resources(shards: int, backend=None):
     if not initialized:
-        raise RuntimeError(
+        raise CoreNotInitializedError(
             "`initialize_thread_resources()` called before `initialize()` was called"
         )
     global thread_resources_initialized
     mesh_shape = (1, shards)
-    devices = np.array(jax.devices()[:shards]).reshape(mesh_shape)
+    devices = np.array(jax.devices(backend)[:shards]).reshape(mesh_shape)
     thread_resources_env = jax.experimental.maps.ResourceEnv(
         jax.experimental.maps.Mesh(devices, ("dp", "mp")),
         *(
