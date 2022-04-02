@@ -31,7 +31,7 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install flake8 pytest
         git submodule sync
-        git submodule update --init --recursive
+        git submodule update --remote --init --recursive
         pip install .
     - name: Lint with flake8
       run: |
