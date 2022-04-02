@@ -430,8 +430,8 @@ class TrainerBase(abc.ABC):
                     else {}
                 ),
             )
+            shards_in = self.data.params["cores_per_replica"]
             if core.DEMATERIALIZED_LOADING_SUPPORTED:
-                shards_in = self.data.params["cores_per_replica"]
                 network.state["params"][
                     "causal_transformer_shard/~/embedding_shard/~/softtune_linear"
                 ] = {
