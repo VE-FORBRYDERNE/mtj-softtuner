@@ -1,47 +1,13 @@
 import mtj_softtuner.core
+import mtj_softtuner.testing_utils
 
 import pytest
 import jax.numpy as jnp
 import jax
 import torch
 import torch.utils.dlpack
-from typing import Callable, TypeVar
 
 mtj_softtuner.core.initialized = mtj_softtuner.core.thread_resources_initialized = False
-
-T = TypeVar("T", bound=Callable)
-
-
-def core_dummy_initialized(f: T) -> T:
-    def decorated(*a, **k):
-        initialized_orig = mtj_softtuner.core.initialized
-        mtj_softtuner.core.initialized = True
-        try:
-            r = f(*a, **k)
-        finally:
-            mtj_softtuner.core.initialized = initialized_orig
-        return r
-
-    return decorated
-
-
-def core_partly_initialized(f: T) -> T:
-    def decorated(*a, **k):
-        initialized_orig = mtj_softtuner.core.thread_resources_initialized
-        env_orig = jax.experimental.maps.thread_resources.env
-        mtj_softtuner.core.initialize_thread_resources(1, backend="cpu")
-        try:
-            r = f(*a, **k)
-        finally:
-            mtj_softtuner.core.thread_resources_initialized = initialized_orig
-            jax.experimental.maps.thread_resources.env = env_orig
-        return r
-
-    return decorated
-
-
-def core_fully_initialized(f: T) -> T:
-    return core_dummy_initialized(core_partly_initialized(f))
 
 
 def shatter_sub():
@@ -83,7 +49,7 @@ def reshard_reverse_sub(shape, old_shape, shards, negative=False, **k):
 def test_thread_resources_env_error():
     with pytest.raises(mtj_softtuner.core.CoreNotInitializedError):
 
-        @core_partly_initialized
+        @mtj_softtuner.testing_utils.core_partly_initialized
         def f():
             pass
 
@@ -95,13 +61,13 @@ def test_shatter_error():
         shatter_sub()
 
 
-@core_dummy_initialized
+@mtj_softtuner.testing_utils.core_dummy_initialized
 def test_shatter_error_2():
     with pytest.raises(mtj_softtuner.core.CoreNotInitializedError):
         shatter_sub()
 
 
-@core_fully_initialized
+@mtj_softtuner.testing_utils.core_fully_initialized
 def test_shatter():
     shatter_sub()
 
@@ -208,7 +174,7 @@ def test_reshard_reverse_error_4():
         reshard_reverse_sub((1, 80, 40, 2), (8, 10, 40, 2), 8)
 
 
-@core_fully_initialized
+@mtj_softtuner.testing_utils.core_fully_initialized
 def test_dlpack():
     @mtj_softtuner.core.shatter("sb", "b")
     def f(_, v):

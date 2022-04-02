@@ -1,4 +1,4 @@
-# mtj-softtuner [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/VE-FORBRYDERNE/mtj-softtuner/blob/main/mtj-softtuner.ipynb) [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+# mtj-softtuner [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/VE-FORBRYDERNE/mtj-softtuner/blob/main/mtj-softtuner.ipynb) [![Python package](https://github.com/VE-FORBRYDERNE/mtj-softtuner/actions/workflows/python-package.yml/badge.svg)](https://github.com/VE-FORBRYDERNE/mtj-softtuner/actions/workflows/python-package.yml) [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 ### (Unofficial Mesh Transformer JAX soft-tuning notebook)
 
 Create, in Colab, soft prompts compatible with [KoboldAI](https://github.com/KoboldAI/KoboldAI-Client) and [mkultra](https://github.com/corolla-johnson/mkultra) for your favourite GPT-J-6B-based or GPT-Neo-2.7B-based model!

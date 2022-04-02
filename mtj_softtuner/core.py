@@ -17,6 +17,7 @@ import jax.dlpack
 import numpy as np
 import haiku as hk
 import torch
+import torch.utils.dlpack
 import packaging.version
 from typing import Callable, Optional, TypeVar
 import mesh_transformer

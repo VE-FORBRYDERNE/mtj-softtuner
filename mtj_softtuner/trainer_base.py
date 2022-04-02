@@ -332,7 +332,12 @@ class TrainerBase(abc.ABC):
 
         self.save_data()
 
-    def train(self):
+    def train(
+        self,
+        skip_initialize_thread_resources=False,
+        skip_get_hf_checkpoint_metadata=False,
+        hide_compiling_spinner=False,
+    ):
         if self.data.ckpt_path is None:
             self.raise_configuration_error(
                 "You didn't specify the path to your model.", code=3
@@ -353,13 +358,15 @@ class TrainerBase(abc.ABC):
         self.save_data()
 
         if (
-            not os.path.exists(os.path.join(self.data.ckpt_path, "shard_0/0.npz"))
+            not skip_get_hf_checkpoint_metadata
+            and not os.path.exists(os.path.join(self.data.ckpt_path, "shard_0/0.npz"))
             and not self.get_hf_checkpoint_metadata()
         ):
             raise RuntimeError("Error getting HF checkpoint metadata")
 
         core.initialize(quiet=self.quiet)
-        core.initialize_thread_resources(self.data.params["cores_per_replica"])
+        if not skip_initialize_thread_resources:
+            core.initialize_thread_resources(self.data.params["cores_per_replica"])
 
         step = 0
 
@@ -722,9 +729,11 @@ class TrainerBase(abc.ABC):
                 flush=True,
             )
             # Simultaneously compile the trainer and train for one step
-            spinner = core.show_spinner()
+            if not hide_compiling_spinner:
+                spinner = core.show_spinner()
             loss, last_loss, grad_norm, grad_norm_micro = train_step(use_tqdm=False)
-            spinner.terminate()
+            if not hide_compiling_spinner:
+                spinner.terminate()
             # Show the plots for learning rate, etc.
             visualization.show_plots()
             # Update plot
