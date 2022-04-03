@@ -33,6 +33,7 @@ jobs:
         git submodule sync
         git submodule update --remote --init --recursive
         pip install .
+        pip install coverage
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
@@ -41,4 +42,14 @@ jobs:
         flake8 . --exclude kobold --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        pytest -vv -rA
+        coverage run -m pytest -vv -rA
+    - name: Generate coverage report
+      run: |
+        coverage report
+        coverage xml
+    - name: Upload coverage report to Codacy
+      if: matrix.python-version == "3.7"
+      uses: codacy/codacy-coverage-reporter-action@v1
+      with:
+        project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+        coverage-reports: coverage.xml

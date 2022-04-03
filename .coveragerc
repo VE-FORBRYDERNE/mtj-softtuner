@@ -1,0 +1,5 @@
+[run]
+include =
+    mtj_softtuner/*
+omit =
+    mtj_softtuner/kobold/*

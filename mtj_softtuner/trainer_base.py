@@ -34,28 +34,28 @@ import transformers
 
 
 class TrainerBase(abc.ABC):
-    @abc.abstractmethod
-    def startup(self, step: int) -> None:
+    @abc.abstractmethod  # pragma: no cover 
+    def startup(self, step: int) -> None:  # pragma: no cover
         ...
 
-    @abc.abstractmethod
-    def get_batch(self, step: int, size: int) -> np.array:
+    @abc.abstractmethod  # pragma: no cover 
+    def get_batch(self, step: int, size: int) -> np.array:  # pragma: no cover
         ...
 
-    @abc.abstractmethod
-    def get_num_sequences(self) -> int:
+    @abc.abstractmethod  # pragma: no cover 
+    def get_num_sequences(self) -> int:  # pragma: no cover
         ...
 
-    @abc.abstractmethod
+    @abc.abstractmethod  # pragma: no cover 
     def get_initial_soft_embeddings(
         self, network: core.EmbeddingCausalTransformer
-    ) -> np.array:
+    ) -> np.array:  # pragma: no cover
         ...
 
-    @abc.abstractmethod
+    @abc.abstractmethod  # pragma: no cover 
     def tokenize_dataset_callback(
         self, tokenizer: transformers.PreTrainedTokenizerBase, text: str
-    ) -> List[int]:
+    ) -> List[int]:  # pragma: no cover
         ...
 
     class TrainerData:

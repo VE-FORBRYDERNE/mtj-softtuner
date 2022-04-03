@@ -1,4 +1,9 @@
 __pycache__/
+build/
+pip-*/
+*.egg-info/
+.coverage
+coverage.xml
 .pytest_cache/
 .hypothesis/
 .mtjs*/

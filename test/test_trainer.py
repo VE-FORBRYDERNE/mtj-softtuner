@@ -48,7 +48,7 @@ def test_basic_trainer():
         "weight_decay": 0.1,
         "warmup": 0.1,
         "end_lr_multiplier": 0.1,
-        "save_every": 50,
+        "save_every": 5,
     }
     trainer.data.params["cores_per_replica"] = 1
     trainer.train(
