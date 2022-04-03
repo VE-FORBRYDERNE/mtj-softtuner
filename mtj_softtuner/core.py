@@ -1,4 +1,4 @@
-from . import _patch as _
+from . import patch
 from . import exceptions
 
 import os
@@ -206,7 +206,10 @@ class EmbeddingShard(mesh_transformer.transformer_shard.EmbeddingShard):
 mesh_transformer.transformer_shard.EmbeddingShard = EmbeddingShard
 
 
-class EmbeddingCausalTransformer(mesh_transformer.transformer_shard.CausalTransformer):
+class EmbeddingCausalTransformer(
+    mesh_transformer.transformer_shard.CausalTransformer,
+    metaclass=patch.PatchMeta,
+):
     """
     A version of Mesh Transformer JAX's CausalTransformer with a function for
     embedding a 1D array of token IDs and returning the embedding matrix

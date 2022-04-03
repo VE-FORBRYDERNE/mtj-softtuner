@@ -1,4 +1,4 @@
-from . import _patch as _
+from . import patch
 from . import core
 from . import exceptions
 from . import serialization
@@ -332,12 +332,13 @@ class TrainerBase(abc.ABC):
 
         self.save_data()
 
+    @patch.patch
     def train(
         self,
         skip_initialize_thread_resources=False,
         skip_get_hf_checkpoint_metadata=False,
         hide_compiling_spinner=False,
-    ):
+    ) -> None:
         if self.data.ckpt_path is None:
             self.raise_configuration_error(
                 "You didn't specify the path to your model.", code=3
