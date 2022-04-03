@@ -1,4 +1,4 @@
-from . import patch
+from . import patch  # pylint: disable=unused-import
 from . import exceptions
 
 import os
