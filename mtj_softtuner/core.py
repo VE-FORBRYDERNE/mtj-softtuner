@@ -7,6 +7,7 @@ import requests  # Only for connecting to Colab TPU and for nothing else
 import progressbar
 from tqdm.auto import tqdm
 import multiprocessing
+import functools
 import time
 import json
 import zipfile
@@ -124,7 +125,7 @@ def shatter(in_axes: str, out_axes: str):
         out_axes = out_axes[0]
 
     def decorator(fun: __F) -> __F:
-        return _ShatterFunction(fun, in_axes, out_axes)
+        return functools.wraps(fun)(_ShatterFunction(fun, in_axes, out_axes))
 
     return decorator
 

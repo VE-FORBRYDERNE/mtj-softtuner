@@ -1,12 +1,14 @@
 from . import core
 
 import jax
+import functools
 from typing import Callable, TypeVar
 
 T = TypeVar("T", bound=Callable)
 
 
 def core_dummy_initialized(f: T) -> T:
+    @functools.wraps(f)
     def decorated(*a, **k):
         initialized_orig = core.initialized
         core.initialized = True
@@ -20,6 +22,7 @@ def core_dummy_initialized(f: T) -> T:
 
 
 def core_partly_initialized(f: T) -> T:
+    @functools.wraps(f)
     def decorated(*a, **k):
         initialized_orig = core.thread_resources_initialized
         env_orig = jax.experimental.maps.thread_resources.env
