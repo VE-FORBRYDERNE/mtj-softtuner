@@ -79,7 +79,8 @@ __F = TypeVar("__F", bound=Callable)
 
 
 def shatter(in_axes: str, out_axes: str):
-    """Helper function for setting up JAX xmaps.
+    """
+    Helper function for setting up JAX xmaps.
 
     This is a decorator that creates an xmapped version of a function.
     Your function's arguments should be NumPy arrays or JAX pytrees with
@@ -131,6 +132,7 @@ def shatter(in_axes: str, out_axes: str):
 
 
 class EmbeddingShard(mesh_transformer.transformer_shard.EmbeddingShard):
+
     """
     A version of Mesh Transformer JAX's EmbeddingShard with a trainable
     soft prompt module
@@ -233,7 +235,8 @@ class EmbeddingCausalTransformer(
         self._get_embedding_matrix = _get_embedding_matrix
 
     def get_embedding_matrix(self, tokens: np.array) -> jnp.array:
-        """Embeds the given array of tokens.
+        """
+        Embeds the given array of tokens.
 
         Parameters
         ----------
@@ -265,7 +268,8 @@ def read_ckpt_custom(
     shards_in: int,
     load_opt: bool = True,
 ):
-    """Loads the model's state from a checkpoint.
+    """
+    Loads the model's state from a checkpoint.
 
     Parameters
     ----------
@@ -332,7 +336,7 @@ def read_ckpt_custom(
 
         for file_index in range(pieces):
             array_keys = [*np.load(f"{ckpt_dir}shard_0/{file_index}.npz").keys()]
-            for array_index in range(len(array_keys)):
+            for array_key in array_keys:
                 unstacked = []
                 for shard_index in range(shards_in):
                     if (
@@ -358,7 +362,7 @@ def read_ckpt_custom(
                         tensor_index += 1
 
                     npz = np.load(f"{ckpt_dir}shard_{shard_index}/{file_index}.npz")
-                    array = npz[array_keys[array_index]]
+                    array = npz[array_key]
                     if array.dtype == "V2":
                         array.dtype = jnp.bfloat16
                     unstacked.append(array)
@@ -539,7 +543,7 @@ def _init_opt_state(params, aux: jnp.array):
 
 
 def init_opt_state(params, optimizer):
-    """Returns initialized optax state for the given haiku parameters and optax optimizer"""
+    """Returns initialized optax state for the given haiku parameters and optax optimizer."""
     _init_opt_state.optimizer = optimizer
     return _init_opt_state(params, np.empty(1))
 
@@ -663,14 +667,14 @@ def get_hf_checkpoint_metadata(ckpt_path: str):
     if "mtj_pe" in lazy_load_spec:
         params["pe"] = lazy_load_spec["mtj_pe"]
     for k, v in lazy_load_spec.get("mtj_config_map", {}).items():
-        if type(v) is not list:
+        if not isinstance(v, list):
             params[k] = params[v]
             continue
-        for i in range(len(v)):
+        for i, e in enumerate(v):
             if i == len(v) - 1:
-                params[k] = v[i]
-            elif v[i] in params:
-                params[k] = params[v[i]]
+                params[k] = e
+            elif e in params:
+                params[k] = params[e]
                 break
 
     model_spec = {}

@@ -10,7 +10,6 @@ def test_basic_trainer():
     This test just makes sure that the BasicTrainer example can be run on a
     CPU without crashing or raising an error.
     """
-
     if os.path.isfile("my_softprompt.mtjsp"):
         os.remove("my_softprompt.mtjsp")
     data = requests.get(

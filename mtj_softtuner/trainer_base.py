@@ -622,7 +622,7 @@ class TrainerBase(abc.ABC):
                     grad_norm_micro=np.float32(grad_norm_micro),
                     **(
                         {"g_avg": g_avg, "s_avg": s_avg}
-                        if type(g_avg) is not bool
+                        if not isinstance(g_avg, bool)
                         else {}
                     ),
                 )
@@ -713,7 +713,7 @@ class TrainerBase(abc.ABC):
                     s_avg = np.float32(s)
                 elif s_avg is not False:
                     s_avg = (1 - noise_scale_alpha) * s_avg + noise_scale_alpha * s
-                if type(g_avg) is not bool and type(s_avg) is not bool:
+                if not isinstance(g_avg, bool) and not isinstance(s_avg, bool):
                     return s_avg / g_avg, g_avg, s_avg
             return None, g_avg, s_avg
 
