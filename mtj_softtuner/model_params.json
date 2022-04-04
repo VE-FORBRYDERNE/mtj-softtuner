@@ -1,4 +1,22 @@
 {
+  "GPT-Neo-125M": {
+    "tokenizer_id": "gpt2",
+    "newlinemode": "n",
+    "params": {
+      "compat": "neo",
+      "layers": 12,
+      "d_model": 768,
+      "n_heads": 12,
+      "n_vocab": 50257,
+      "n_vocab_padding": 143,
+      "norm": "layernorm",
+      "pe": "fixed",
+      "seq": 2048,
+      "cores_per_replica": 4,
+      "eos_token": [50256],
+      "max_batch_size": 2048
+    }
+  },
   "GPT-Neo-2.7B": {
     "tokenizer_id": "gpt2",
     "newlinemode": "n",

@@ -7,6 +7,8 @@ coverage.xml
 .pytest_cache/
 .hypothesis/
 .mtjs*/
+checkpoint.pt
+jax_checkpoint/
 dataset.txt
 dataset.npy
 my_softprompt*.mtjsp
