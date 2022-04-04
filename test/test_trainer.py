@@ -4,8 +4,7 @@ import os
 import requests
 
 
-@mtj_softtuner.testing_utils.core_fully_initialized
-def test_basic_trainer():
+def basic_trainer_sub(ckpt_path, save_file):
     """
     This test just makes sure that the BasicTrainer example can be run on a
     CPU without crashing or raising an error.
@@ -19,9 +18,9 @@ def test_basic_trainer():
         f.write(data)
 
     trainer = mtj_softtuner.BasicTrainer()
-    trainer.data.ckpt_path = "KoboldAI/fairseq-dense-125M"
+    trainer.data.ckpt_path = ckpt_path
     trainer.get_hf_checkpoint_metadata()
-    trainer.data.save_file = "my_softprompt.mtjsp"
+    trainer.data.save_file = save_file
     initial_softprompt = (
         "Le Jeu du Prochain Train itself is simplicity in motion. The object: "
         "Be the last of your round's six to jump from one side of the tracks to "
@@ -65,3 +64,13 @@ def test_basic_trainer():
     soft_prompt_name = "Untitled"
     soft_prompt_description = "Baby shoes"
     trainer.export_to_mkultra(output_file, soft_prompt_name, soft_prompt_description)
+
+
+@mtj_softtuner.testing_utils.core_fully_initialized
+def test_basic_trainer_fairseq():
+    basic_trainer_sub("KoboldAI/fairseq-dense-125M", "my_softprompt.mtjsp")
+
+
+@mtj_softtuner.testing_utils.core_fully_initialized
+def test_basic_trainer_neo():
+    basic_trainer_sub("EleutherAI/gpt-neo-125M", "my_softprompt_2.mtjsp")

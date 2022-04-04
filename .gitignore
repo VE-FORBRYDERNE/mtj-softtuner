@@ -9,6 +9,6 @@ coverage.xml
 .mtjs*/
 dataset.txt
 dataset.npy
-my_softprompt.mtjsp
+my_softprompt*.mtjsp
 my_softprompt.zip
 my_softprompt.json

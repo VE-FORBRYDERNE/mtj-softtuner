@@ -7,6 +7,7 @@ from .kobold import torch_lazy_loader
 
 import abc
 import os
+import sys
 import termcolor
 from tqdm.auto import tqdm
 from typing import Optional
@@ -468,6 +469,10 @@ class TrainerBase(abc.ABC):
                     self.data.params["cores_per_replica"],
                 )
             else:
+                if sys.version_info < (3, 7, 0):
+                    raise RuntimeError(
+                        "Python 3.7.0 or higher is required for mtj-softtuner to load from a Hugging Face model"
+                    )
                 self._spmodule = (
                     "causal_transformer_shard/~/embedding_shard/~/softtune_linear"
                 )
