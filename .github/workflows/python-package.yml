@@ -42,8 +42,8 @@ jobs:
         flake8 . --exclude kobold --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        coverage run -m pytest -vv -rA
-    - name: Generate coverage report
+        coverage run -m pytest -vv -rA --color=yes
+    - name: Generate coverage report with Coverage.py
       run: |
         coverage report
         coverage xml

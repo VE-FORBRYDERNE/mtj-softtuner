@@ -3,3 +3,9 @@ include =
     mtj_softtuner/*
 omit =
     mtj_softtuner/kobold/*
+
+[report]
+exclude_lines =
+    pragma: no cover
+    @(abc\.)?abstract(((class|static)?method)|property)
+    def __repr__

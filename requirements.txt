@@ -2,7 +2,7 @@ torch >= 1.9, <= 1.11
 numpy
 tqdm
 requests
-optax @ git+https://github.com/deepmind/optax.git@00c3256466196d0f6c523a8854323b08ef534600#egg=optax
+optax >= 0.1.0
 dm-haiku == 0.0.5
 jax == 0.2.12
 jaxlib == 0.1.68
