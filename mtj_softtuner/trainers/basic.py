@@ -33,7 +33,7 @@ class BasicTrainer(trainer_base.TrainerBase):
         if step < 0:
             self.data.soft_in_dim = len(self.data.initial_softprompt)
 
-    def get_batch(self, step: int, size: int) -> np.array:
+    def get_batch(self, step: int, size: int) -> np.ndarray:
         return self.dataset[(step - 1) * size : step * size]
 
     def get_num_sequences(self) -> int:
@@ -52,7 +52,7 @@ class BasicTrainer(trainer_base.TrainerBase):
 
     def get_initial_soft_embeddings(
         self, network: core.EmbeddingCausalTransformer
-    ) -> np.array:
+    ) -> np.ndarray:
         return network.get_embedding_matrix(
             np.array(self.data.initial_softprompt, dtype=np.uint32)
         )

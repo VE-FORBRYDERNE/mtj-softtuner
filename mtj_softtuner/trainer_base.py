@@ -40,7 +40,7 @@ class TrainerBase(abc.ABC):
         ...
 
     @abc.abstractmethod  # pragma: no cover
-    def get_batch(self, step: int, size: int) -> np.array:  # pragma: no cover
+    def get_batch(self, step: int, size: int) -> np.ndarray:  # pragma: no cover
         ...
 
     @abc.abstractmethod  # pragma: no cover
@@ -50,7 +50,7 @@ class TrainerBase(abc.ABC):
     @abc.abstractmethod  # pragma: no cover
     def get_initial_soft_embeddings(
         self, network: core.EmbeddingCausalTransformer
-    ) -> np.array:  # pragma: no cover
+    ) -> np.ndarray:  # pragma: no cover
         ...
 
     @abc.abstractmethod  # pragma: no cover

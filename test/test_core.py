@@ -12,7 +12,7 @@ mtj_softtuner.core.initialized = mtj_softtuner.core.thread_resources_initialized
 
 def shatter_sub():
     @mtj_softtuner.core.shatter("sb", "bs")
-    def sample(s, b: jnp.array):
+    def sample(s: jnp.DeviceArray, b: jnp.DeviceArray):
         return b - 1 - jax.lax.axis_index("batch"), jax.lax.psum(
             s, "shard"
         ) - 2 * jax.lax.axis_index("shard")

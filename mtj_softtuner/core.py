@@ -36,7 +36,7 @@ initialized = False
 thread_resources_initialized = False
 
 
-def jax_from_dlpack(capsule) -> jnp.array:
+def jax_from_dlpack(capsule) -> jnp.DeviceArray:
     return jax.dlpack.from_dlpack(
         capsule,
         **(
@@ -153,7 +153,7 @@ class EmbeddingShard(mesh_transformer.transformer_shard.EmbeddingShard):
             name="softtune_linear",
         )
 
-    def __call__(self, x: jnp.array, **kwargs) -> jnp.array:
+    def __call__(self, x: jnp.DeviceArray, **kwargs) -> jnp.DeviceArray:
         pe_length = kwargs.get("pe_length", 0)
         pe_length = jnp.int32(pe_length)
         shard_start_index = jax.lax.axis_index("shard") * self.in_dim_per_shard
@@ -221,10 +221,12 @@ class EmbeddingCausalTransformer(
         super().__init__(config, **kwargs)
 
         @shatter("sb", "b")
-        def _get_embedding_matrix(params: dict, tokens: jnp.array) -> jnp.array:
+        def _get_embedding_matrix(
+            params: dict, tokens: jnp.DeviceArray
+        ) -> jnp.DeviceArray:
             @hk.without_apply_rng
             @hk.transform
-            def inner(tokens: jnp.array):
+            def inner(tokens: jnp.DeviceArray):
                 transformer = mesh_transformer.transformer_shard.CausalTransformerShard(
                     self.config
                 )
@@ -234,20 +236,20 @@ class EmbeddingCausalTransformer(
 
         self._get_embedding_matrix = _get_embedding_matrix
 
-    def get_embedding_matrix(self, tokens: np.array) -> jnp.array:
+    def get_embedding_matrix(self, tokens: np.ndarray) -> jnp.DeviceArray:
         """
         Embeds the given array of tokens.
 
         Parameters
         ----------
-        tokens : numpy.array
+        tokens : numpy.ndarray
             A 1-dimensional NumPy/jax.numpy array with dtype `numpy.uint32` or
             `jax.numpy.uint32` containing the IDs of the tokens you want to
             embed.
 
         Returns
         -------
-        jax.numpy.array
+        jax.numpy.DeviceArray
             Embedding matrix for your tokens as a 2-dimensional jax.numpy array
             with dtype `jax.numpy.float32` and shape `(len(tokens), d_model)`,
             where `d_model` is the embedding dimension (or "model dimension")
@@ -538,7 +540,7 @@ def get_hf_conversion_callback(network, model_spec):
 
 
 @shatter("sb", "s")
-def _init_opt_state(params, aux: jnp.array):
+def _init_opt_state(params, aux: jnp.DeviceArray):
     return mesh_transformer.util.to_f32(_init_opt_state.optimizer.init(params))
 
 
