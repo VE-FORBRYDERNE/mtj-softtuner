@@ -9,7 +9,7 @@ if os.path.isfile(path):
 
 setup(
     name="mtj-softtuner",
-    version="1.0.3.dev0",
+    version="1.0.3",
     author="VE FORBRYDERNE",
     author_email="ve.forbryderne@gmail.com",
     url="https://github.com/ve-forbryderne/mtj-softtuner",
@@ -23,7 +23,8 @@ setup(
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Science/Research",
         "Topic :: Scientific/Engineering :: Artificial Intelligence",
-        "Operating System :: OS Independent",
+        "Operating System :: POSIX :: Linux",
+        "Operating System :: MacOS",
         "Programming Language :: Python :: 3.7",
         "Framework :: Jupyter",
     ],

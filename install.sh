@@ -2,5 +2,5 @@
 cd "${0%/*}"
 git submodule sync
 git submodule update --remote --init --recursive
-python3 -m pip uninstall -y mtj-softtuner
-python3 -m pip install .
+${1:-python3} -m pip uninstall -y mtj-softtuner
+${1:-python3} -m pip install .
