@@ -190,7 +190,7 @@ def test_read_ckpt_neo():
     basic_trainer_sub("jax_checkpoint", "my_softprompt_neo_jax.mtjsp")
 
 
-@pytest.mark.last
+@pytest.mark.order("last")
 def test_basic_sp_equivalence_neo():
     """
     This test makes sure that the outputs of the two tests that use

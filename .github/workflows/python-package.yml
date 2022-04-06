@@ -29,7 +29,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        python -m pip install flake8 pytest pytest-ordering
+        python -m pip install flake8 pytest pytest-order
         git submodule sync
         git submodule update --remote --init --recursive
         pip install .
