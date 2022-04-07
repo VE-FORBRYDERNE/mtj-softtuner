@@ -23,11 +23,11 @@ jobs:
         uses: actions/setup-python@v3
         with:
           python-version: '3.7'
-      - name: Setup development API server
+      - name: Set up development API server
         run: |
           python -m pip install --upgrade pip
           python -m pip install flask
-          python -c "import os; from flask import Flask, send_from_directory, request; app = Flask(__name__); root = os.path.join(os.getcwd(), 'codacy_config'); app.route('/', defaults={'path': ''})(app.route('/<path:path>')(lambda path: send_from_directory(root, 'analysis.json') if 'analysis/configuration' in path else send_from_directory(root, 'duplication_tools.json') if 'duplicationTools' in path else send_from_directory(root, 'metrics_tools.json') if 'metricsTools' in path else send_from_directory(root, 'tools.json') if path.strip('/').endswith('tools') else send_from_directory(os.path.join(root, path.split('tools/')[-1].split('/')[0]), path.split('tools/')[-1].split('/')[1] + request.args.get('cursor', '') + '.json'))); app.run(host='0.0.0.0', port=5002)" &
+          python -c "import os; from flask import Flask, send_from_directory, request; app = Flask(__name__); root = os.path.join(os.getcwd(), 'codacy_config'); app.route('/', defaults={'path': ''})(app.route('/<path:path>')(lambda path: send_from_directory(root, 'analysis.json') if 'analysis/configuration' in path else send_from_directory(root, 'duplication_tools.json') if 'duplicationTools' in path else send_from_directory(root, 'metrics_tools.json') if 'metricsTools' in path else send_from_directory(root, 'tools.json') if path.strip('/').endswith('tools') else send_from_directory(os.path.join(root, path.split('tools/')[-1].split('/')[0]), path.split('tools/')[-1].split('/')[1] + request.args.get('cursor', '') + '.json'))); app.run(host='172.17.0.1', port=5002)" &
       - name: Run Codacy Analysis CLI
         uses: codacy/codacy-analysis-cli-action@master
         with:
