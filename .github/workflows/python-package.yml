@@ -48,7 +48,7 @@ jobs:
         coverage report
         coverage xml
     - name: Upload coverage report to Codacy (only if Python 3.7)
-      if: matrix.python-version == '3.7'
+      if: github.event_name != 'pull_request' && matrix.python-version == '3.7'
       uses: codacy/codacy-coverage-reporter-action@v1
       with:
         project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
