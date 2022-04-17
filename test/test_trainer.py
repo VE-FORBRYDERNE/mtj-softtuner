@@ -20,7 +20,6 @@ def basic_trainer_sub(ckpt_path, save_file):
     ).content.decode("utf8")
     with open("dataset.txt", "w") as f:
         f.write(data)
-
     trainer = mtj_softtuner.BasicTrainer()
     trainer.data.ckpt_path = ckpt_path
     trainer.set_params("GPT-Neo-125M")
