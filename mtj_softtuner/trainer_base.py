@@ -26,6 +26,7 @@ import base64
 import pickle
 import datetime
 import uuid
+import random
 from typing import List, TextIO, Union
 import mesh_transformer
 import mesh_transformer.util
@@ -234,6 +235,7 @@ class TrainerBase(abc.ABC):
         batch_size=2048,
         epochs=1,
         use_ftfy=True,
+        shuffle_seed: Optional[Union[int, float, str, bytes, bytearray]] = 1729,
     ):
         dataset_path = dataset_path.replace("\\", "/")
         output_file = output_file.replace("\\", "/")
@@ -275,10 +277,12 @@ class TrainerBase(abc.ABC):
         elif os.path.isfile(dataset_path):
             files = [dataset_path]
         else:
-            files = (
+            files = [
                 os.path.join(dataset_path, filename)
                 for filename in os.listdir(dataset_path)
-            )
+            ]
+        if shuffle_seed is not None:
+            random.Random(shuffle_seed).shuffle(files)
         tokens = []
         eos = tokenizer.decode(self.data.params["eos_token"])
         for path in files:
