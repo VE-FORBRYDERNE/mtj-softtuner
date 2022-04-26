@@ -15,7 +15,9 @@ if [[ $hash != "" && $hash != *" "* && ! -d ".git" ]]; then
     git branch -qD _alpha
     git reset -q HEAD
     git checkout -q -- mtj_softtuner/_version.py
-    sed -i '4s/.*/hash="\$Format:%H\$"/' install.sh
+    p='4s/.*/hash="\$For'
+    p+='mat:%H\$"/'
+    sed -i $p install.sh
 fi
 git submodule sync
 git submodule update --remote --init --recursive
