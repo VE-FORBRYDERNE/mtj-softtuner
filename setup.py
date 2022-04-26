@@ -11,7 +11,6 @@ if os.path.isfile(path):
 setup(
     name="mtj-softtuner",
     version=versioneer.get_version(),
-    cmdclass=versioneer.get_cmdclass(),
     author="VE FORBRYDERNE",
     author_email="ve.forbryderne@gmail.com",
     url="https://github.com/ve-forbryderne/mtj-softtuner",
