@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 cd "${0%/*}"
 Format=" "
 hash="$Format:%H$"
@@ -15,7 +16,7 @@ if [[ $hash != "" && $hash != *" "* && ! -d ".git" ]]; then
     git branch -qD _alpha
     git reset -q HEAD
     git checkout -q -- mtj_softtuner/_version.py
-    p='s/^hash=".*$/hash="\$For'
+    p='s/^hash[[:blank:]]*=[[:blank:]]*".*$/hash="\$For'
     p+='mat:%H\$"/'
     sed -i $p install.sh
 fi
