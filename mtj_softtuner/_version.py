@@ -44,7 +44,7 @@ def get_config():
     cfg.VCS = "git"
     cfg.style = "pep440"
     cfg.tag_prefix = "v"
-    cfg.parentdir_prefix = "None"
+    cfg.parentdir_prefix = "mtj-softtuner-"
     cfg.versionfile_source = "mtj_softtuner/_version.py"
     cfg.verbose = False
     return cfg
