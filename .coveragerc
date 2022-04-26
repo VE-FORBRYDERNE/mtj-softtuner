@@ -2,6 +2,7 @@
 include =
     mtj_softtuner/*
 omit =
+    mtj_softtuner/_version.py
     mtj_softtuner/kobold/*
 
 [report]
