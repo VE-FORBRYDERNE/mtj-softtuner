@@ -1,3 +1,4 @@
 mtj_softtuner/_version.py export-subst
+install.sh export-subst
 *versioneer.py linguist-vendored
 *_version.py linguist-vendored
