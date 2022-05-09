@@ -277,10 +277,10 @@ class TrainerBase(abc.ABC):
         elif os.path.isfile(dataset_path):
             files = [dataset_path]
         else:
-            files = [
+            files = sorted(
                 os.path.join(dataset_path, filename)
                 for filename in os.listdir(dataset_path)
-            ]
+            )
         if shuffle_seed is not None:
             random.Random(shuffle_seed).shuffle(files)
         tokens = []
