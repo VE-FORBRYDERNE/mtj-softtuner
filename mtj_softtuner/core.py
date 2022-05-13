@@ -162,6 +162,16 @@ class EmbeddingShard(mesh_transformer.transformer_shard.EmbeddingShard):
         )
         mask = jnp.broadcast_to((x < self.in_dim)[:, jnp.newaxis], proj_out.shape)
         proj_out = jnp.where(mask, proj_out, 0)
+        soft_shard_start_index = (
+            jax.lax.axis_index("shard") * self.softtune_in_dim_per_shard
+        )
+        soft_out = self.softtune_proj(
+            jax.nn.one_hot(
+                x - soft_shard_start_index - self.in_dim,
+                self.softtune_in_dim_per_shard,
+            )
+        )
+        proj_out += soft_out
         if not kwargs.get("mtj_softtuner_disable_pe", False) and getattr(
             self, "has_sqrt_embed_scale", False
         ):
@@ -183,18 +193,6 @@ class EmbeddingShard(mesh_transformer.transformer_shard.EmbeddingShard):
                 pos_embed, -pe_length - getattr(self, "pe_shift", 0), axis=0
             )[-proj_out.shape[0] :]
             proj_out += pos_embed
-        soft_shard_start_index = (
-            jax.lax.axis_index("shard") * self.softtune_in_dim_per_shard
-        )
-        soft_out = self.softtune_proj(
-            jax.nn.one_hot(
-                x - soft_shard_start_index - self.in_dim,
-                self.softtune_in_dim_per_shard,
-            )
-        )
-        if getattr(self, "has_sqrt_embed_scale", False):
-            soft_out *= jnp.sqrt(self.out_dim).astype(proj_out.dtype)
-        proj_out += soft_out
         proj_out = mesh_transformer.util.g_psum(proj_out)
         if not kwargs.get("mtj_softtuner_disable_pe", False) and getattr(
             self, "post_embed", False
