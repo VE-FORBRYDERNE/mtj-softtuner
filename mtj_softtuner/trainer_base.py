@@ -143,7 +143,9 @@ class TrainerBase(abc.ABC):
             assert npz["step"] > 0
             assert npz["tensor"].ndim == 2 and "opt_state" in npz
             assert npz["tensor"].shape[0] < self.data.params["max_batch_size"]
-            assert npz["tensor"].shape[1] == self.data.params["d_model"]
+            assert npz["tensor"].shape[1] == self.data.params.get(
+                "d_embed", self.data.params["d_model"]
+            )
             assert all(
                 p in npz
                 for p in (
@@ -186,7 +188,9 @@ class TrainerBase(abc.ABC):
             assert npz["step"] > 0
             assert npz["tensor"].ndim == 2 and "opt_state" in npz
             assert npz["tensor"].shape[0] < self.data.params["max_batch_size"]
-            assert npz["tensor"].shape[1] == self.data.params["d_model"]
+            assert npz["tensor"].shape[1] == self.data.params.get(
+                "d_embed", self.data.params["d_model"]
+            )
             assert all(
                 p in npz
                 for p in (
@@ -406,7 +410,9 @@ class TrainerBase(abc.ABC):
                 assert npz["step"] > 0
                 assert npz["tensor"].ndim == 2 and "opt_state" in npz
                 assert npz["tensor"].shape[0] < self.data.params["max_batch_size"]
-                assert npz["tensor"].shape[1] == self.data.params["d_model"]
+                assert npz["tensor"].shape[1] == self.data.params.get(
+                    "d_embed", self.data.params["d_model"]
+                )
                 assert all(
                     p in npz
                     for p in (
@@ -451,7 +457,7 @@ class TrainerBase(abc.ABC):
                     "w": mesh_transformer.transformer_shard.PlaceholderTensor(
                         shards_in,
                         math.ceil(self.data.soft_in_dim / shards_in),
-                        self.data.params["d_model"],
+                        self.data.params.get("d_embed", self.data.params["d_model"]),
                     )
                 }
             print(
@@ -484,7 +490,7 @@ class TrainerBase(abc.ABC):
                     (
                         shards_in,
                         math.ceil(self.data.soft_in_dim / shards_in),
-                        self.data.params["d_model"],
+                        self.data.params.get("d_embed", self.data.params["d_model"]),
                     ),
                     dtype=jnp.float32,
                 )
@@ -496,6 +502,16 @@ class TrainerBase(abc.ABC):
                 ):
                     transformers.AutoModelForCausalLM.from_pretrained(
                         self.data.ckpt_path
+                    )
+                m = network.state["params"].get(
+                    "causal_transformer_shard/~/embedding_shard/~/linear", {}
+                )
+                if isinstance(
+                    m.get("b"), mesh_transformer.transformer_shard.PlaceholderTensor
+                ):
+                    m["b"] = network.move_xmap(
+                        jnp.zeros(m["b"].shape, dtype=jnp.bfloat16),
+                        np.empty(self.data.params["cores_per_replica"]),
                     )
             network.state = network.move_xmap(
                 network.state, np.zeros(self.data.params["cores_per_replica"])
@@ -544,7 +560,7 @@ class TrainerBase(abc.ABC):
             (
                 self.data.params["cores_per_replica"],
                 -1,
-                self.data.params["d_model"],
+                self.data.params.get("d_embed", self.data.params["d_model"]),
             )
         )
         # Put this 3D array into the network so we can train it

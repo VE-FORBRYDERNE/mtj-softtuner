@@ -145,7 +145,7 @@ class EmbeddingShard(mesh_transformer.transformer_shard.EmbeddingShard):
             self.softtune_in_dim / config["cores_per_replica"]
         )
         self.softtune_proj = hk.Linear(
-            self.out_dim,
+            getattr(self, "d_embed", self.out_dim),
             w_init=hk.initializers.TruncatedNormal(
                 stddev=1 / np.sqrt(self.softtune_in_dim)
             ),
@@ -162,6 +162,11 @@ class EmbeddingShard(mesh_transformer.transformer_shard.EmbeddingShard):
         )
         mask = jnp.broadcast_to((x < self.in_dim)[:, jnp.newaxis], proj_out.shape)
         proj_out = jnp.where(mask, proj_out, 0)
+        if (
+            not kwargs.get("mtj_softtuner_disable_pe", False)
+            and getattr(self, "project_in") is not None
+        ):
+            proj_out @= self.project_in
         soft_shard_start_index = (
             jax.lax.axis_index("shard") * self.softtune_in_dim_per_shard
         )
@@ -249,9 +254,8 @@ class EmbeddingCausalTransformer(
         -------
         jax.numpy.DeviceArray
             Embedding matrix for your tokens as a 2-dimensional jax.numpy array
-            with dtype `jax.numpy.float32` and shape `(len(tokens), d_model)`,
-            where `d_model` is the embedding dimension (or "model dimension")
-            of your model.
+            with dtype `jax.numpy.float32` and shape `(len(tokens), d_embed)`,
+            where `d_embed` is the embedding dimension of your model.
         """
         return self._get_embedding_matrix(
             self.state["params"],
@@ -354,7 +358,7 @@ def read_ckpt_custom(
                                 (
                                     shards_in,
                                     math.ceil(soft_in_dim / shards_in),
-                                    params["d_model"],
+                                    params.get("d_embed", params["d_model"]),
                                 ),
                                 dtype=jnp.float32,
                             )
@@ -487,6 +491,8 @@ def get_hf_conversion_callback(network, model_spec):
                     tensor = model_dict[key].materialize(f, map_location="cpu")
                     model_dict[key] = tensor.to("meta")
 
+                    if "remove_first_two_rows" in transforms:
+                        tensor = tensor[2:]
                     if "divide_by_shards" in transforms:
                         tensor /= network.config["cores_per_replica"]
                     if "vocab_pad" in transforms:
@@ -515,15 +521,6 @@ def get_hf_conversion_callback(network, model_spec):
                         ),
                         np.empty(network.config["cores_per_replica"]),
                     )
-                for mv in network.state["params"].values():
-                    for pk, pv in mv.items():
-                        if isinstance(
-                            pv, mesh_transformer.transformer_shard.PlaceholderTensor
-                        ):
-                            mv[pk] = network.move_xmap(
-                                jnp.zeros(mv[pk].shape, dtype=jnp.bfloat16),
-                                np.empty(network.config["cores_per_replica"]),
-                            )
             except Exception as e:
                 import traceback
 
