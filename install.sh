@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-cd "${0%/*}"
+cd "$(dirname ${BASH_SOURCE[0]})"
 Format=" "
 hash="$Format:%H$"
 if [[ $hash != "" && $hash != *" "* && ! -d ".git" ]]; then
