@@ -28,6 +28,8 @@ import mesh_transformer.transformer_shard
 import transformers
 
 
+BACKEND = "kaggle"
+
 DEMATERIALIZED_LOADING_SUPPORTED = hasattr(
     mesh_transformer.transformer_shard, "compute_placeholder_params"
 )
@@ -571,16 +573,18 @@ def show_spinner() -> multiprocessing.Process:
     return spinner
 
 
-def initialize(quiet: Optional[bool] = None):
+def initialize(
+    quiet: Optional[bool] = None, driver_version="tpu_driver0.1_dev20210607"
+):
     if quiet is None:
         quiet = exceptions.default_quiet
-    global initialized
+    global initialized, BACKEND
     if initialized:
         return
     if (
         "COLAB_TPU_ADDR" not in os.environ
-        or len(os.environ["COLAB_TPU_ADDR"].split()) == 0
-    ):
+        or len(os.environ["COLAB_TPU_ADDR"].strip()) == 0
+    ) and ("TPU_NAME" not in os.environ or len(os.environ["TPU_NAME"].strip()) == 0):
         raise exceptions.ConfigurationError(
             "No Colab TPU detected.  Is this script running in a Colab TPU instance?",
             code=16,
@@ -591,12 +595,19 @@ def initialize(quiet: Optional[bool] = None):
         flush=True,
     )
     spinner = show_spinner()
-    colab_tpu_addr = os.environ["COLAB_TPU_ADDR"].split(":")[0]
+    if "COLAB_TPU_ADDR" in os.environ and os.environ["COLAB_TPU_ADDR"].strip():
+        tpu_addr = os.environ["COLAB_TPU_ADDR"]
+        BACKEND = "colab"
+    else:
+        tpu_addr = os.environ["TPU_NAME"]
+        BACKEND = "kaggle"
+    tpu_addr = tpu_addr.replace("grpc://", "")
+    tpu_addr_without_port = tpu_addr.split(":")[0]
     requests.post(
-        f"http://{colab_tpu_addr}:8475/requestversion/tpu_driver0.1_dev20210607"
+        f"http://{tpu_addr_without_port}:8475/requestversion/{driver_version}"
     )
     jax.config.FLAGS.jax_xla_backend = "tpu_driver"
-    jax.config.FLAGS.jax_backend_target = "grpc://" + os.environ["COLAB_TPU_ADDR"]
+    jax.config.FLAGS.jax_backend_target = "grpc://" + tpu_addr
     spinner.terminate()
     print(flush=True)
     if jax.device_count() < 8:
@@ -708,7 +719,9 @@ def get_hf_checkpoint_metadata(ckpt_path: str):
     newlinemode = params.get(
         "newlinemode", "s" if model_config.model_type == "xglm" else "n"
     )
-    params["max_batch_size"] = 450 if params["d_model"] > 4096 else 2048
+    params["max_batch_size"] = (
+        450 if BACKEND == "colab" and params["d_model"] > 4096 else 2048
+    )
     params["eos_token"] = (
         [50259, 50259] if model_config.model_type == "xglm" else [50256]
     )
