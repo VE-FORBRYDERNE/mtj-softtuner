@@ -65,6 +65,10 @@ trainer.data.initial_softprompt = tokenizer.encode(
     initial_softprompt, max_length=int(2e9), truncation=True
 )
 
+# Alternatively, you can uncomment the below line to instead use a randomly
+# initialized prompt with 20 tokens in it:
+#trainer.data.kaiming_size = 20
+
 # Do this to generate an NPY file for your dataset if you haven't already done so
 dataset_path = "/content/dataset.txt"  # Can be a single file or a folder
 output_file = "/content/dataset.npy"

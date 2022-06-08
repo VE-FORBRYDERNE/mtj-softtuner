@@ -2,6 +2,8 @@ from .. import core
 from .. import trainer_base
 
 import os
+import jax.numpy as jnp
+import jax
 import numpy as np
 import transformers
 from typing import List, Optional
@@ -26,11 +28,15 @@ class BasicTrainer(trainer_base.TrainerBase):
                 "Your dataset is too small!  gradient_accumulation_steps must be less than or equal to the number of sequences.",
                 code=101,
             )
-        if step < 0 and self.data.initial_softprompt is None:
+        if (
+            self.data.kaiming_size <= 0
+            and step < 0
+            and self.data.initial_softprompt is None
+        ):
             self.raise_configuration_error(
                 "You have not set an initial soft prompt string.", code=103
             )
-        if step < 0:
+        if self.data.kaiming_size <= 0 and step < 0:
             self.data.soft_in_dim = len(self.data.initial_softprompt)
 
     def get_batch(self, step: int, size: int) -> np.ndarray:
@@ -53,6 +59,15 @@ class BasicTrainer(trainer_base.TrainerBase):
     def get_initial_soft_embeddings(
         self, network: core.EmbeddingCausalTransformer
     ) -> np.ndarray:
+        if self.data.kaiming_size > 0:
+            return jax.nn.initializers.he_normal()(
+                jax.random.PRNGKey(1000000007),
+                (
+                    self.data.kaiming_size,
+                    self.data.params.get("d_embed", self.data.params["d_model"]),
+                ),
+                dtype=jnp.float32,
+            )
         return network.get_embedding_matrix(
             np.array(self.data.initial_softprompt, dtype=np.uint32)
         )
