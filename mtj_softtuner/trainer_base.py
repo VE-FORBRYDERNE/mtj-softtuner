@@ -73,6 +73,7 @@ class TrainerBase(abc.ABC):
             self.gradient_accumulation_steps = -1
             self.soft_in_dim = -1
             self.prompt_method = "tokens"
+            self.prompt_seed = 42
 
         @property
         def kaiming_size(self):  # backwards compatibility

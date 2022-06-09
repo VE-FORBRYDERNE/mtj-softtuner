@@ -8,7 +8,7 @@ import torch
 import pytest
 
 
-def basic_trainer_sub(ckpt_path, save_file):
+def basic_trainer_sub(ckpt_path, save_file, prompt_method="tokens", soft_in_dim=51):
     """
     This test just makes sure that the BasicTrainer example can be run on a
     CPU without crashing or raising an error.
@@ -25,17 +25,21 @@ def basic_trainer_sub(ckpt_path, save_file):
     trainer.set_params("GPT-Neo-125M")
     trainer.get_hf_checkpoint_metadata()
     trainer.data.save_file = save_file
-    initial_softprompt = (
-        "Le Jeu du Prochain Train itself is simplicity in motion. The object: "
-        "Be the last of your round's six to jump from one side of the tracks to "
-        "the other - that is, across the tracks - before the train passes.\n\n"
-    )
-    tokenizer = trainer.get_tokenizer()
-    if trainer.data.newlinemode == "s":
-        initial_softprompt = initial_softprompt.replace("\n", "</s>")
-    trainer.data.initial_softprompt = tokenizer.encode(
-        initial_softprompt, max_length=int(2e9), truncation=True
-    )
+    trainer.data.prompt_method = prompt_method
+    if prompt_method == "tokens":
+        initial_softprompt = (
+            "Le Jeu du Prochain Train itself is simplicity in motion. The object: "
+            "Be the last of your round's six to jump from one side of the tracks to "
+            "the other - that is, across the tracks - before the train passes.\n\n"
+        )
+        tokenizer = trainer.get_tokenizer()
+        if trainer.data.newlinemode == "s":
+            initial_softprompt = initial_softprompt.replace("\n", "</s>")
+        trainer.data.initial_softprompt = tokenizer.encode(
+            initial_softprompt, max_length=int(2e9), truncation=True
+        )
+    else:
+        trainer.data.soft_in_dim = soft_in_dim
     dataset_path = "dataset.txt"
     output_file = "dataset.npy"
     batch_size = 128
@@ -68,6 +72,26 @@ def basic_trainer_sub(ckpt_path, save_file):
     soft_prompt_name = "Untitled"
     soft_prompt_description = "Baby shoes"
     trainer.export_to_mkultra(output_file, soft_prompt_name, soft_prompt_description)
+
+
+@pytest.mark.order(after="test_basic_trainer_fairseq")
+@mtj_softtuner.testing_utils.core_fully_initialized
+def test_basic_trainer_fairseq_vocab_sample():
+    basic_trainer_sub(
+        "KoboldAI/fairseq-dense-125M",
+        "my_softprompt_vocab_sample.mtjsp",
+        prompt_method="vocab_sample",
+    )
+
+
+@pytest.mark.order(after="test_basic_trainer_fairseq")
+@mtj_softtuner.testing_utils.core_fully_initialized
+def test_basic_trainer_fairseq_kaiming():
+    basic_trainer_sub(
+        "KoboldAI/fairseq-dense-125M",
+        "my_softprompt_kaiming.mtjsp",
+        prompt_method="kaiming",
+    )
 
 
 @mtj_softtuner.testing_utils.core_fully_initialized

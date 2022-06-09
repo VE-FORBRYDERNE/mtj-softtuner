@@ -62,7 +62,7 @@ class BasicTrainer(trainer_base.TrainerBase):
     ) -> np.ndarray:
         if self.data.prompt_method == "kaiming":
             return jax.nn.initializers.he_normal()(
-                jax.random.PRNGKey(1000000007),
+                jax.random.PRNGKey(self.data.prompt_seed),
                 (
                     self.data.soft_in_dim,
                     self.data.params.get("d_embed", self.data.params["d_model"]),
@@ -73,7 +73,7 @@ class BasicTrainer(trainer_base.TrainerBase):
             rng = np.random.Generator(
                 np.random.PCG64(
                     [
-                        42,
+                        self.data.prompt_seed,
                         self.data.params.get("d_embed", self.data.params["d_model"]),
                         self.data.params["n_heads"],
                         self.data.params["layers"],
