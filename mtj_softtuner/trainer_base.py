@@ -735,7 +735,7 @@ class TrainerBase(abc.ABC):
                 self.data.gradient_accumulation_steps - 1
             )
             s = (gbsmall - gbbig) / (1 - 1 / self.data.gradient_accumulation_steps)
-            use_step_in_noise_avgs = gbbig < 2
+            use_step_in_noise_avgs = True
             if use_step_in_noise_avgs:
                 if g_avg is True:
                     g_avg = np.float32(g)
