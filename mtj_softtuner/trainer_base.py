@@ -73,6 +73,7 @@ class TrainerBase(abc.ABC):
             self.gradient_accumulation_steps = -1
             self.soft_in_dim = -1
             self.prompt_method = "tokens"
+            self.prompt_seed = 42
 
         @property
         def kaiming_size(self):  # backwards compatibility
@@ -113,7 +114,9 @@ class TrainerBase(abc.ABC):
             self.data,
         )
 
-    def get_hf_checkpoint_metadata(self) -> bool:
+    def get_hf_checkpoint_metadata(self, test_mode_override=False) -> bool:
+        if not test_mode_override and core.test_mode:
+            return True
         data = core.get_hf_checkpoint_metadata(self.data.ckpt_path)
         if data is None:
             return False
@@ -358,6 +361,10 @@ class TrainerBase(abc.ABC):
         skip_get_hf_checkpoint_metadata=False,
         hide_compiling_spinner=False,
     ) -> None:
+        if core.test_mode:
+            skip_initialize_thread_resources = True
+            hide_compiling_spinner = True
+
         if self.data.ckpt_path is None:
             self.raise_configuration_error(
                 "You didn't specify the path to your model.", code=3

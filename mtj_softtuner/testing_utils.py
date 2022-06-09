@@ -7,6 +7,20 @@ from typing import Callable, TypeVar
 T = TypeVar("T", bound=Callable)
 
 
+def core_test_mode(f: T) -> T:
+    @functools.wraps(f)
+    def decorated(*a, **k):
+        test_mode_orig = core.test_mode
+        core.test_mode = True
+        try:
+            r = f(*a, **k)
+        finally:
+            core.test_mode = test_mode_orig
+        return r
+
+    return decorated
+
+
 def core_dummy_initialized(f: T) -> T:
     @functools.wraps(f)
     def decorated(*a, **k):
@@ -18,7 +32,7 @@ def core_dummy_initialized(f: T) -> T:
             core.initialized = initialized_orig
         return r
 
-    return decorated
+    return core_test_mode(decorated)
 
 
 def core_partly_initialized(f: T) -> T:
@@ -34,7 +48,7 @@ def core_partly_initialized(f: T) -> T:
             jax.experimental.maps.thread_resources.env = env_orig
         return r
 
-    return decorated
+    return core_test_mode(decorated)
 
 
 def core_fully_initialized(f: T) -> T:
