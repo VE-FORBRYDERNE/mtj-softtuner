@@ -37,7 +37,7 @@ class BasicTrainer(trainer_base.TrainerBase):
             self.raise_configuration_error(
                 "You have not set an initial soft prompt string.", code=103
             )
-        if self.data.kaiming_size <= 0 and step < 0:
+        if self.data.prompt_method == "tokens" and step < 0:
             self.data.soft_in_dim = len(self.data.initial_softprompt)
 
     def get_batch(self, step: int, size: int) -> np.ndarray:
