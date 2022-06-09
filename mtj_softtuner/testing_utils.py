@@ -10,7 +10,7 @@ T = TypeVar("T", bound=Callable)
 def core_test_mode(f: T) -> T:
     @functools.wraps(f)
     def decorated(*a, **k):
-        test_mode_orig = core.initialized
+        test_mode_orig = core.test_mode
         core.test_mode = True
         try:
             r = f(*a, **k)
