@@ -118,7 +118,7 @@ def test_get_tokenizer_2():
 
 
 def test_get_tokenizer_error():
-    with pytest.raises(OSError):
+    with pytest.raises((OSError, ValueError)):
         decode(mtj_softtuner.core.get_tokenizer({"tokenizer_id": "@"}))
 
 

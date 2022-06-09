@@ -34,6 +34,7 @@ DEMATERIALIZED_LOADING_SUPPORTED = hasattr(
     mesh_transformer.transformer_shard, "compute_placeholder_params"
 )
 
+test_mode = False
 initialized = False
 thread_resources_initialized = False
 

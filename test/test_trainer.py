@@ -23,7 +23,8 @@ def basic_trainer_sub(ckpt_path, save_file, prompt_method="tokens", soft_in_dim=
     trainer = mtj_softtuner.BasicTrainer()
     trainer.data.ckpt_path = ckpt_path
     trainer.set_params("GPT-Neo-125M")
-    trainer.get_hf_checkpoint_metadata()
+    trainer.get_hf_checkpoint_metadata(test_mode_override=False)
+    trainer.get_hf_checkpoint_metadata(test_mode_override=True)
     trainer.data.save_file = save_file
     trainer.data.prompt_method = prompt_method
     if prompt_method == "tokens":
