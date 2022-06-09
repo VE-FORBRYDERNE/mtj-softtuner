@@ -65,9 +65,15 @@ trainer.data.initial_softprompt = tokenizer.encode(
     initial_softprompt, max_length=int(2e9), truncation=True
 )
 
-# Alternatively, you can uncomment the below line to instead use a randomly
+# Alternatively, you can uncomment the below two lines to instead use a randomly
 # initialized prompt with 20 tokens in it:
-#trainer.data.kaiming_size = 20
+#trainer.data.prompt_method = "kaiming"
+#trainer.data.soft_in_dim = 20
+
+# Or these two lines to use a prompt with 20 randomly sampled (without
+# replacement) tokens from your model's vocabulary:
+#trainer.data.prompt_method = "vocab_sample"
+#trainer.data.soft_in_dim = 20
 
 # Do this to generate an NPY file for your dataset if you haven't already done so
 dataset_path = "/content/dataset.txt"  # Can be a single file or a folder

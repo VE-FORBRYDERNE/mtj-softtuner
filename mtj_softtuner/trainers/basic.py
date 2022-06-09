@@ -2,6 +2,7 @@ from .. import core
 from .. import trainer_base
 
 import os
+import itertools
 import jax.numpy as jnp
 import jax
 import numpy as np
@@ -29,7 +30,7 @@ class BasicTrainer(trainer_base.TrainerBase):
                 code=101,
             )
         if (
-            self.data.kaiming_size <= 0
+            self.data.prompt_method == "tokens"
             and step < 0
             and self.data.initial_softprompt is None
         ):
@@ -59,17 +60,44 @@ class BasicTrainer(trainer_base.TrainerBase):
     def get_initial_soft_embeddings(
         self, network: core.EmbeddingCausalTransformer
     ) -> np.ndarray:
-        if self.data.kaiming_size > 0:
+        if self.data.prompt_method == "kaiming":
             return jax.nn.initializers.he_normal()(
                 jax.random.PRNGKey(1000000007),
                 (
-                    self.data.kaiming_size,
+                    self.data.soft_in_dim,
                     self.data.params.get("d_embed", self.data.params["d_model"]),
                 ),
                 dtype=jnp.float32,
             )
-        return network.get_embedding_matrix(
-            np.array(self.data.initial_softprompt, dtype=np.uint32)
+        elif self.data.prompt_method == "vocab_sample":
+            rng = np.random.Generator(
+                np.random.PCG64(
+                    [
+                        42,
+                        self.data.params.get("d_embed", self.data.params["d_model"]),
+                        self.data.params["n_heads"],
+                        self.data.params["layers"],
+                    ]
+                )
+            )
+            tokenizer = self.get_tokenizer()
+            special_tokens = set(
+                itertools.chain.from_iterable(
+                    tokenizer.encode(v)
+                    for v in tokenizer.special_tokens_map_extended.values()
+                )
+            )
+            sample_space = [
+                k for k in range(self.data.params["n_vocab"]) if k not in special_tokens
+            ]
+            sample = rng.choice(sample_space, self.data.soft_in_dim, False)
+            return network.get_embedding_matrix(np.array(sample, dtype=np.uint32))
+        elif self.data.prompt_method == "tokens":
+            return network.get_embedding_matrix(
+                np.array(self.data.initial_softprompt, dtype=np.uint32)
+            )
+        self.raise_configuration_error(
+            f"Unknown prompt method {repr(self.data.prompt_method)}", code=104
         )
 
     def tokenize_dataset_callback(

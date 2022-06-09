@@ -72,7 +72,16 @@ class TrainerBase(abc.ABC):
             self.stparams: Optional[dict] = None
             self.gradient_accumulation_steps = -1
             self.soft_in_dim = -1
-            self.kaiming_size = 0
+            self.prompt_method = "tokens"
+
+        @property
+        def kaiming_size(self):  # backwards compatibility
+            return self.soft_in_dim
+
+        @kaiming_size.setter
+        def kaiming_size(self, value: int):  # backwards compatibility
+            self.prompt_method = "kaiming"
+            self.soft_in_dim = value
 
     data: TrainerData
 
@@ -242,9 +251,6 @@ class TrainerBase(abc.ABC):
         use_ftfy=True,
         shuffle_seed: Optional[Union[int, float, str, bytes, bytearray]] = 1729,
     ):
-        if self.data.kaiming_size > 0:
-            self.data.soft_in_dim = self.data.kaiming_size
-
         dataset_path = dataset_path.replace("\\", "/")
         output_file = output_file.replace("\\", "/")
         if not isinstance(batch_size, int) or batch_size < 1:
@@ -352,9 +358,6 @@ class TrainerBase(abc.ABC):
         skip_get_hf_checkpoint_metadata=False,
         hide_compiling_spinner=False,
     ) -> None:
-        if self.data.kaiming_size > 0:
-            self.data.soft_in_dim = self.data.kaiming_size
-
         if self.data.ckpt_path is None:
             self.raise_configuration_error(
                 "You didn't specify the path to your model.", code=3
