@@ -58,6 +58,7 @@ initial_softprompt = (
     "Be the last of your round's six to jump from one side of the tracks to "
     "the other - that is, across the tracks - before the train passes.\n\n"
 )
+trainer.data.prompt_method = "tokens"
 tokenizer = trainer.get_tokenizer()
 if trainer.data.newlinemode == "s":  # Handle fairseq-style newlines if required
     initial_softprompt = initial_softprompt.replace("\n", "</s>")
