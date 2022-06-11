@@ -87,7 +87,8 @@ def patch(f: __F) -> __F:
         old_level = logger.level
         logger.setLevel(logging.ERROR)
 
-        old_from_pretrained = transformers.PreTrainedModel.from_pretrained.__func__
+        old_from_pretrained = transformers.PreTrainedModel.from_pretrained
+        _old_from_pretrained = old_from_pretrained.__func__
 
         @classmethod
         def new_from_pretrained(
@@ -101,7 +102,7 @@ def patch(f: __F) -> __F:
             utils.bar = None
             if not core.no_aria2:
                 utils.aria2_hook(pretrained_model_name_or_path, **kwargs)
-            return old_from_pretrained(
+            return _old_from_pretrained(
                 cls, pretrained_model_name_or_path, *model_args, **kwargs
             )
 
