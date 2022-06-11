@@ -493,6 +493,7 @@ def get_hf_conversion_callback(network, model_spec):
                             dtype=model_dict[key].dtype,
                             device="meta",
                         )
+                        utils.bar.update(1)
                         continue
 
                     storage_key = model_dict[key].key
