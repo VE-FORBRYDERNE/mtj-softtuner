@@ -1,4 +1,5 @@
 __pycache__/
+.vscode/
 build/
 pip-*/
 *.egg-info/
@@ -7,6 +8,8 @@ coverage.xml
 .pytest_cache/
 .hypothesis/
 .mtjs*/
+*.aria2
+*~
 checkpoint.pt
 jax_checkpoint/
 dataset.txt

@@ -1,5 +1,6 @@
 from . import patch  # pylint: disable=unused-import
 from . import exceptions
+from .kobold import utils
 
 import os
 import termcolor
@@ -35,6 +36,7 @@ DEMATERIALIZED_LOADING_SUPPORTED = hasattr(
 )
 
 test_mode = False
+no_aria2 = False
 initialized = False
 thread_resources_initialized = False
 
@@ -460,16 +462,29 @@ def reshard_reverse(x, total_shards, old_shape):
 
 def get_hf_conversion_callback(network, model_spec):
     def hf_conversion_callback(model_dict, f, **_):
+        if hf_conversion_callback.nested:
+            return
+        hf_conversion_callback.nested = True
+        if utils.num_shards is None or utils.current_shard == 0:
+            if utils.num_shards is not None:
+                num_tensors = len(
+                    utils.get_sharded_checkpoint_num_tensors(
+                        utils.from_pretrained_model_name,
+                        utils.from_pretrained_index_filename,
+                        **utils.from_pretrained_kwargs,
+                    )
+                )
+            else:
+                num_tensors = len(model_dict)
+            print(flush=True)
+            utils.bar = tqdm(total=num_tensors, desc="Loading model tensors")
         with zipfile.ZipFile(f, "r") as z:
             try:
                 last_storage_key = None
                 f = None
-                for key in tqdm(
-                    sorted(
-                        model_dict.keys(),
-                        key=lambda k: (model_dict[k].key, model_dict[k].seek_offset),
-                    ),
-                    desc="Loading model tensors",
+                for key in sorted(
+                    model_dict.keys(),
+                    key=lambda k: (model_dict[k].key, model_dict[k].seek_offset),
                 ):
 
                     if key not in model_spec:
@@ -524,6 +539,25 @@ def get_hf_conversion_callback(network, model_spec):
                         ),
                         np.empty(network.config["cores_per_replica"]),
                     )
+
+                    utils.bar.update(1)
+
+                if (
+                    utils.num_shards is not None
+                    and utils.current_shard < utils.num_shards
+                ):
+                    return
+
+                for mv in network.state["params"].values():
+                    for pk, pv in mv.items():
+                        if isinstance(
+                            pv, mesh_transformer.transformer_shard.PlaceholderTensor
+                        ):
+                            mv[pk] = network.move_xmap(
+                                jnp.zeros(mv[pk].shape, dtype=jnp.bfloat16),
+                                np.empty(network.config["cores_per_replica"]),
+                            )
+
             except Exception as e:
                 import traceback
 
@@ -531,9 +565,14 @@ def get_hf_conversion_callback(network, model_spec):
                 print("ERROR: ", e)
                 raise e
             finally:
+                if utils.num_shards is None or utils.current_shard >= utils.num_shards:
+                    utils.bar.close()
+                    utils.bar = None
+                hf_conversion_callback.nested = False
                 if isinstance(f, zipfile.ZipExtFile):
                     f.close()
 
+    hf_conversion_callback.nested = False
     return hf_conversion_callback
 
 
