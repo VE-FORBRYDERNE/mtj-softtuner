@@ -260,9 +260,11 @@ class TrainerBase(abc.ABC):
             self.raise_configuration_error(
                 "batch_size must be an integer greater than zero.", code=9
             )
-        if not isinstance(epochs, int) or epochs < 1:
+        if (
+            not isinstance(epochs, int) and not isinstance(epochs, float)
+        ) or epochs <= 0:
             self.raise_configuration_error(
-                "epochs must be an integer greater than zero.", code=10
+                "epochs must be an int or float greater than zero.", code=10
             )
         if isinstance(output_file, str) and output_file.endswith("/"):
             self.raise_configuration_error(
@@ -320,7 +322,7 @@ class TrainerBase(abc.ABC):
         print("Dataset size (in tokens):", len(tokens))
         if len(tokens) < batch_size + 1:
             self.raise_configuration_error(
-                "Your dataset is too small!  The number of tokens has to be greater than the batch size.",
+                "Your dataset is too small!  The number of tokens has to be greater than the batch size.  Try increasing the epochs.",
                 code=13,
             )
         tail = len(tokens) % (batch_size + 1)
@@ -331,15 +333,18 @@ class TrainerBase(abc.ABC):
             tokens = tokens[:-tail]
 
         tokens = np.array(tokens, dtype=np.uint16).reshape((-1, batch_size + 1))
-        if epochs > 1:
+        sequences_per_epoch = tokens.shape[0]
+        _epochs = math.ceil(epochs)
+        if _epochs > 1:
             rng = np.random.Generator(np.random.PCG64(1729))
             tokens = np.concatenate(
                 (
                     tokens,
-                    *(rng.permutation(tokens, axis=0) for i in range(epochs - 1)),
+                    *(rng.permutation(tokens, axis=0) for i in range(_epochs - 1)),
                 ),
                 axis=0,
             )
+        tokens = tokens[: math.ceil(epochs * sequences_per_epoch)]
         print(f"Total sequences in your dataset: {tokens.shape[0]}")
 
         if isinstance(output_file, str):
