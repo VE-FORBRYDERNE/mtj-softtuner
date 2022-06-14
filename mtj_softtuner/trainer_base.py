@@ -808,7 +808,7 @@ class TrainerBase(abc.ABC):
             range(first_step, steps),
             initial=first_step,
             total=steps,
-            desc="SOFT-TUNING PROGRESS",
+            desc="CURRENT TRAINING STEP",
         ):
             step += 1
             # Train for one step and update the plot
