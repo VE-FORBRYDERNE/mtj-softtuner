@@ -5,6 +5,7 @@ import requests
 import jax.numpy as jnp
 import numpy as np
 import torch
+import math
 import pytest
 
 
@@ -44,7 +45,7 @@ def basic_trainer_sub(ckpt_path, save_file, prompt_method="tokens", soft_in_dim=
     dataset_path = "dataset.txt"
     output_file = "dataset.npy"
     batch_size = 128
-    epochs = 3
+    epochs = math.pi
     trainer.tokenize_dataset(dataset_path, output_file, batch_size, epochs)
     dataset_file = output_file
     trainer.data.dataset_file = dataset_file
