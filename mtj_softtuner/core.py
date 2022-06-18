@@ -8,6 +8,7 @@ import requests  # Only for connecting to Colab TPU and for nothing else
 import progressbar
 from tqdm.auto import tqdm
 import multiprocessing
+import contextlib
 import functools
 import time
 import json
@@ -167,11 +168,6 @@ class EmbeddingShard(mesh_transformer.transformer_shard.EmbeddingShard):
         )
         mask = jnp.broadcast_to((x < self.in_dim)[:, jnp.newaxis], proj_out.shape)
         proj_out = jnp.where(mask, proj_out, 0)
-        if (
-            not kwargs.get("mtj_softtuner_disable_pe", False)
-            and getattr(self, "project_in") is not None
-        ):
-            proj_out @= self.project_in
         soft_shard_start_index = (
             jax.lax.axis_index("shard") * self.softtune_in_dim_per_shard
         )
@@ -186,6 +182,11 @@ class EmbeddingShard(mesh_transformer.transformer_shard.EmbeddingShard):
             self, "has_sqrt_embed_scale", False
         ):
             proj_out *= jnp.sqrt(self.out_dim).astype(proj_out.dtype)
+        if (
+            not kwargs.get("mtj_softtuner_disable_pe", False)
+            and getattr(self, "project_in") is not None
+        ):
+            proj_out @= self.project_in
         if (
             not kwargs.get("mtj_softtuner_disable_pe", False)
             and not getattr(self, "post_embed", False)
@@ -482,6 +483,8 @@ def get_hf_conversion_callback(network, model_spec):
             try:
                 last_storage_key = None
                 f = None
+                if utils.num_shards is not None:
+                    utils.current_shard += 1
                 for key in sorted(
                     model_dict.keys(),
                     key=lambda k: (model_dict[k].key, model_dict[k].seek_offset),
@@ -685,9 +688,29 @@ def initialize_thread_resources(shards: int, backend=None):
 def get_tokenizer(
     params: dict, tokenizer_id: Optional[str] = None
 ) -> transformers.PreTrainedTokenizerBase:
-    return transformers.GPT2TokenizerFast.from_pretrained(
-        params.get("tokenizer_id", "gpt2")
-    )
+    try:
+        tokenizer = transformers.AutoTokenizer.from_pretrained(
+            params.get("tokenizer_id", "gpt2")
+        )
+    except ValueError:
+        tokenizer = transformers.AutoTokenizer.from_pretrained(
+            params.get("tokenizer_id", "gpt2"), use_fast=False
+        )
+
+    @contextlib.contextmanager
+    def _mtj_softtuner_no_prefix():
+        add_bos_token = getattr(tokenizer, "add_bos_token", False)
+        add_prefix_space = getattr(tokenizer, "add_prefix_space", False)
+        tokenizer.add_bos_token = False
+        tokenizer.add_prefix_space = False
+        try:
+            yield
+        finally:
+            tokenizer.add_bos_token = add_bos_token
+            tokenizer.add_prefix_space = add_prefix_space
+
+    tokenizer._mtj_softtuner_no_prefix = _mtj_softtuner_no_prefix
+    return tokenizer
 
 
 def get_hf_checkpoint_metadata(ckpt_path: str):

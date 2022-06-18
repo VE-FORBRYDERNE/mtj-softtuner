@@ -81,12 +81,13 @@ class BasicTrainer(trainer_base.TrainerBase):
                 )
             )
             tokenizer = self.get_tokenizer()
-            special_tokens = set(
-                itertools.chain.from_iterable(
-                    tokenizer.encode(v)
-                    for v in tokenizer.special_tokens_map_extended.values()
+            with tokenizer._mtj_softtuner_no_prefix():
+                special_tokens = set(
+                    itertools.chain.from_iterable(
+                        tokenizer.encode(str(v))
+                        for v in tokenizer.special_tokens_map_extended.values()
+                    )
                 )
-            )
             sample_space = [
                 k for k in range(self.data.params["n_vocab"]) if k not in special_tokens
             ]
@@ -105,4 +106,5 @@ class BasicTrainer(trainer_base.TrainerBase):
     ) -> List[int]:
         if self.data.newlinemode == "s":
             text = text.replace("\n", "</s>")
-        return tokenizer.encode(text) + self.data.params["eos_token"]
+        with tokenizer._mtj_softtuner_no_prefix():
+            return tokenizer.encode(text) + self.data.params["eos_token"]
