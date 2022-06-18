@@ -686,9 +686,14 @@ def initialize_thread_resources(shards: int, backend=None):
 def get_tokenizer(
     params: dict, tokenizer_id: Optional[str] = None
 ) -> transformers.PreTrainedTokenizerBase:
-    tokenizer = transformers.AutoTokenizer.from_pretrained(
-        params.get("tokenizer_id", "gpt2")
-    )
+    try:
+        tokenizer = transformers.AutoTokenizer.from_pretrained(
+            params.get("tokenizer_id", "gpt2")
+        )
+    except ValueError:
+        tokenizer = transformers.AutoTokenizer.from_pretrained(
+            params.get("tokenizer_id", "gpt2"), use_fast=False
+        )
 
     @contextlib.contextmanager
     def _mtj_softtuner_no_prefix():
