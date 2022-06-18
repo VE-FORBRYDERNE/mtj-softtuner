@@ -483,6 +483,8 @@ def get_hf_conversion_callback(network, model_spec):
             try:
                 last_storage_key = None
                 f = None
+                if utils.num_shards is not None:
+                    utils.current_shard += 1
                 for key in sorted(
                     model_dict.keys(),
                     key=lambda k: (model_dict[k].key, model_dict[k].seek_offset),
