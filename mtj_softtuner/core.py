@@ -1,8 +1,13 @@
 from . import patch  # pylint: disable=unused-import
 from . import exceptions
-from .kobold import utils
 
 import os
+import sys
+
+sys.path.append(os.path.join(os.path.realpath(os.path.dirname(__file__)), "kobold"))
+
+from .kobold import utils
+
 import termcolor
 import requests  # Only for connecting to Colab TPU and for nothing else
 import progressbar
