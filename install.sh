@@ -35,4 +35,4 @@ git submodule sync
 git submodule update --remote --init --recursive
 ${1:-python3} -m pip uninstall -y mtj-softtuner
 ${1:-python3} -m pip install .
-apt install aria2 2> /dev/null  # For faster model downloads in Colab
+apt install aria2 2> /dev/null || true  # For faster model downloads in Colab
