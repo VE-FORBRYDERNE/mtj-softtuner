@@ -216,6 +216,9 @@ class EmbeddingShard(mesh_transformer.transformer_shard.EmbeddingShard):
             pos_embed = self.positional_embeddings
             pos_embed = jnp.roll(pos_embed, -pe_length, axis=0)[-proj_out.shape[0] :]
             proj_out += pos_embed
+        if not kwargs.get("mtj_softtuner_disable_pe", False) and hasattr(self, "norm"):
+            proj_out = mesh_transformer.util.f_psum(proj_out)
+            proj_out = self.norm(proj_out)
         return proj_out
 
 
