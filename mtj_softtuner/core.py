@@ -497,8 +497,9 @@ def get_hf_conversion_callback(network, model_spec):
                     model_dict.keys(),
                     key=lambda k: (model_dict[k].key, model_dict[k].seek_offset),
                 ):
+                    model_spec_key = max((k for k in model_spec.keys() if key.endswith(k)), key=len, default=None)
 
-                    if key not in model_spec:
+                    if model_spec_key is None:
                         model_dict[key] = torch.empty(
                             model_dict[key].shape,
                             dtype=model_dict[key].dtype,
@@ -516,7 +517,7 @@ def get_hf_conversion_callback(network, model_spec):
                     current_offset = f.tell()
                     if current_offset != model_dict[key].seek_offset:
                         f.seek(model_dict[key].seek_offset)
-                    spec = model_spec[key]
+                    spec = model_spec[model_spec_key]
                     transforms = set(spec.get("transforms", ()))
                     tensor = model_dict[key].materialize(f, map_location="cpu")
                     model_dict[key] = tensor.to("meta")
