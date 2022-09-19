@@ -523,7 +523,8 @@ class TrainerBase(abc.ABC):
                     dematerialized_modules=True,
                 ):
                     transformers.AutoModelForCausalLM.from_pretrained(
-                        self.data.ckpt_path
+                        self.data.ckpt_path,
+                        cache_dir="cache",
                     )
                 m = network.state["params"].get(
                     "causal_transformer_shard/~/embedding_shard/~/linear", {}
