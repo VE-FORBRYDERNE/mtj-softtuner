@@ -497,7 +497,11 @@ def get_hf_conversion_callback(network, model_spec):
                     model_dict.keys(),
                     key=lambda k: (model_dict[k].key, model_dict[k].seek_offset),
                 ):
-                    model_spec_key = max((k for k in model_spec.keys() if key.endswith(k)), key=len, default=None)
+                    model_spec_key = max(
+                        (k for k in model_spec.keys() if key.endswith(k)),
+                        key=len,
+                        default=None,
+                    )
 
                     if model_spec_key is None:
                         model_dict[key] = torch.empty(
@@ -699,11 +703,14 @@ def get_tokenizer(
 ) -> transformers.PreTrainedTokenizerBase:
     try:
         tokenizer = transformers.AutoTokenizer.from_pretrained(
-            params.get("tokenizer_id", "gpt2")
+            params.get("tokenizer_id", "gpt2"),
+            cache_dir="cache",
         )
     except ValueError:
         tokenizer = transformers.AutoTokenizer.from_pretrained(
-            params.get("tokenizer_id", "gpt2"), use_fast=False
+            params.get("tokenizer_id", "gpt2"),
+            use_fast=False,
+            cache_dir="cache",
         )
 
     @contextlib.contextmanager
@@ -727,7 +734,7 @@ def get_hf_checkpoint_metadata(ckpt_path: str):
         return None
 
     ckpt_path = ckpt_path.rstrip("/")
-    model_config = transformers.AutoConfig.from_pretrained(ckpt_path)
+    model_config = transformers.AutoConfig.from_pretrained(ckpt_path, cache_dir="cache")
 
     spec_path = os.path.join(
         os.path.dirname(os.path.realpath(__file__)),
