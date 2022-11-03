@@ -532,7 +532,9 @@ def get_hf_conversion_callback(network, model_spec):
                         tensor /= network.config["cores_per_replica"]
                     if "vocab_pad" in transforms:
                         tensor = torch.nn.functional.pad(
-                            tensor, (0, 0, 0, network.config["n_vocab_padding"])
+                            tensor,
+                            (0,) * (tensor.ndim * 2 - 1)
+                            + (network.config["n_vocab_padding"],),
                         )
                     if "no_transpose" not in transforms and tensor.ndim == 2:
                         tensor = tensor.T
