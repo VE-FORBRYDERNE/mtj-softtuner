@@ -520,7 +520,7 @@ def get_hf_conversion_callback(network, model_spec):
                             f.close()
                         try:
                             f = z.open(f"archive/data/{storage_key}")
-                        except:
+                        except Exception as e:
                             f = z.open(f"{filename}/data/{storage_key}")
                     current_offset = f.tell()
                     if current_offset != model_dict[key].seek_offset:
