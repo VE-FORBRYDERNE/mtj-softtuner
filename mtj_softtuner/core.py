@@ -473,6 +473,7 @@ def get_hf_conversion_callback(network, model_spec):
     def hf_conversion_callback(model_dict, f, **_):
         if hf_conversion_callback.nested:
             return
+        filename = os.path.basename(os.path.normpath(f)).split(".")[0]
         hf_conversion_callback.nested = True
         if utils.num_shards is None or utils.current_shard == 0:
             if utils.num_shards is not None:
@@ -517,7 +518,10 @@ def get_hf_conversion_callback(network, model_spec):
                         last_storage_key = storage_key
                         if isinstance(f, zipfile.ZipExtFile):
                             f.close()
-                        f = z.open(f"archive/data/{storage_key}")
+                        try:
+                            f = z.open(f"archive/data/{storage_key}")
+                        except Exception as e:
+                            f = z.open(f"{filename}/data/{storage_key}")
                     current_offset = f.tell()
                     if current_offset != model_dict[key].seek_offset:
                         f.seek(model_dict[key].seek_offset)
