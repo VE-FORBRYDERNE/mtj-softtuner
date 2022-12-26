@@ -76,12 +76,12 @@ def patch(f: __F) -> __F:
 
         # Allows mtj-softtuner to use aria2 to download models
 
-        old_vars = utils.vars
+        old_vars = utils.koboldai_vars
 
         class Vars:
             aria2_port = 6799
 
-        utils.vars = Vars
+        utils.koboldai_vars = Vars
 
         logger = logging.getLogger("urllib3")
         old_level = logger.level
@@ -136,7 +136,7 @@ def patch(f: __F) -> __F:
             if JAX13:
                 jax.host_count = old_jax_host_count
                 jax.host_id = old_jax_host_id
-            utils.vars = old_vars
+            utils.koboldai_vars = old_vars
             logger.setLevel(old_level)
             transformers.PreTrainedModel.from_pretrained = old_from_pretrained
             if hasattr(transformers.modeling_utils, "get_checkpoint_shard_files"):
