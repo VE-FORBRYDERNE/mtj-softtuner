@@ -80,6 +80,7 @@ def patch(f: __F) -> __F:
 
         class Vars:
             aria2_port = 6799
+            revision = None
 
         utils.koboldai_vars = Vars
 
